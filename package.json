@@ -1,0 +1,19 @@
+{
+    "name": "drive-monaco",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview",
+        "format": "prettier --write ."
+    },
+    "dependencies": {
+        "monaco-editor": "^0.37.1"
+    },
+    "devDependencies": {
+        "prettier": "^3.0.0",
+        "vite": "^4.5.0"
+    }
+}
