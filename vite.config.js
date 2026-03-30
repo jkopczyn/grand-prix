@@ -10,6 +10,9 @@ export default defineConfig({
             },
         },
     },
+    optimizeDeps: {
+        include: ["monaco-editor"],
+    },
     server: {
         port: 3000,
         open: "/app/",

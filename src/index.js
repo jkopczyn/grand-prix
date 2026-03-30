@@ -18,6 +18,7 @@ const editor = monaco.editor.create(document.getElementById("editor"), {
     language: "javascript",
     automaticLayout: true,
     minimap: { enabled: false },
+    renderLineHighlight: "all",
 });
 
 // Instantiate contributions (order matters — auth first)
