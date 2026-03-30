@@ -7,7 +7,7 @@ export function registerToggleWordWrapAction(editor) {
         label: "Toggle Word Wrap",
         keybindings: [monaco.KeyMod.Alt | monaco.KeyCode.KeyH],
         run(editor) {
-            const config = ConfigController.get(editor);
+            const config = ConfigController.get();
             const current = config.get("wordWrap");
             config.set("wordWrap", current === "on" ? "off" : "on");
         },

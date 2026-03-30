@@ -1,4 +1,5 @@
 import { GapiAuthController } from "./auth";
+import { getContribution } from "../registry";
 
 const CONTRIBUTION_ID = "driveMonaco.welcome";
 const WIDGET_ID = "driveMonaco.welcome.widget";
@@ -6,8 +7,8 @@ const WIDGET_ID = "driveMonaco.welcome.widget";
 export class WelcomeModal {
     static ID = CONTRIBUTION_ID;
 
-    static get(editor) {
-        return editor.getContribution(CONTRIBUTION_ID);
+    static get() {
+        return getContribution(CONTRIBUTION_ID);
     }
 
     constructor(editor) {
@@ -16,7 +17,7 @@ export class WelcomeModal {
         this._widget = null;
         this._visible = false;
 
-        const auth = GapiAuthController.get(editor);
+        const auth = GapiAuthController.get();
 
         if (!auth.isLoggedIn) {
             this._show();
@@ -93,7 +94,7 @@ export class WelcomeModal {
         });
 
         button.addEventListener("click", () => {
-            const auth = GapiAuthController.get(this._editor);
+            const auth = GapiAuthController.get();
             auth.requestToken().catch(console.error);
         });
 

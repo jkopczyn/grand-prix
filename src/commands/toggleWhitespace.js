@@ -5,7 +5,7 @@ export function registerToggleWhitespaceAction(editor) {
         id: "driveMonaco.action.toggleWhitespace",
         label: "Toggle Render Whitespace",
         run(editor) {
-            const config = ConfigController.get(editor);
+            const config = ConfigController.get();
             const current = config.get("renderWhitespace");
             config.set(
                 "renderWhitespace",

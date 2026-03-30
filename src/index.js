@@ -1,5 +1,6 @@
 import "./userWorker";
 import * as monaco from "./monaco";
+import { registerContribution } from "./registry";
 import { GapiAuthController } from "./contributions/auth";
 import { DriveController } from "./contributions/drive";
 import { ConfigController } from "./contributions/config";
@@ -12,24 +13,22 @@ import { registerChangeLanguageAction } from "./commands/changeLanguage";
 import { registerToggleWordWrapAction } from "./commands/toggleWordWrap";
 import { registerToggleWhitespaceAction } from "./commands/toggleWhitespace";
 
-monaco.editor.registerEditorContribution(
-    GapiAuthController.ID,
-    GapiAuthController
-);
-monaco.editor.registerEditorContribution(DriveController.ID, DriveController);
-monaco.editor.registerEditorContribution(ConfigController.ID, ConfigController);
-monaco.editor.registerEditorContribution(WelcomeModal.ID, WelcomeModal);
-monaco.editor.registerEditorContribution(
-    EditMarginController.ID,
-    EditMarginController
-);
-
 const editor = monaco.editor.create(document.getElementById("editor"), {
     value: "// Welcome to Drive Monaco\n",
     language: "javascript",
     automaticLayout: true,
     minimap: { enabled: false },
 });
+
+// Instantiate contributions (order matters — auth first)
+registerContribution(GapiAuthController.ID, new GapiAuthController(editor));
+registerContribution(DriveController.ID, new DriveController(editor));
+registerContribution(ConfigController.ID, new ConfigController(editor));
+registerContribution(WelcomeModal.ID, new WelcomeModal(editor));
+registerContribution(
+    EditMarginController.ID,
+    new EditMarginController(editor)
+);
 
 registerSaveAction(editor);
 registerCreateFileAction(editor);

@@ -12,7 +12,7 @@ export function registerChangeThemeAction(editor) {
         id: "driveMonaco.action.changeTheme",
         label: "Change Theme",
         run(editor) {
-            const config = ConfigController.get(editor);
+            const config = ConfigController.get();
             const current = config.get("theme");
 
             const choice = prompt(

@@ -1,4 +1,5 @@
 import { CLIENT_ID, DISCOVERY_DOC, SCOPES } from "../gapi_consts";
+import { getContribution } from "../registry";
 
 const CONTRIBUTION_ID = "driveMonaco.auth";
 const TOKEN_KEY = "driveMonaco.token";
@@ -6,8 +7,8 @@ const TOKEN_KEY = "driveMonaco.token";
 export class GapiAuthController {
     static ID = CONTRIBUTION_ID;
 
-    static get(editor) {
-        return editor.getContribution(CONTRIBUTION_ID);
+    static get() {
+        return getContribution(CONTRIBUTION_ID);
     }
 
     constructor(editor) {

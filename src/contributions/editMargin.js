@@ -1,10 +1,12 @@
+import { getContribution } from "../registry";
+
 const CONTRIBUTION_ID = "driveMonaco.editMargin";
 
 export class EditMarginController {
     static ID = CONTRIBUTION_ID;
 
-    static get(editor) {
-        return editor.getContribution(CONTRIBUTION_ID);
+    static get() {
+        return getContribution(CONTRIBUTION_ID);
     }
 
     constructor(editor) {

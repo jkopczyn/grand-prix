@@ -8,7 +8,7 @@ export function registerCreateFileAction(editor) {
             const name = prompt("Enter file name:");
             if (!name) return;
 
-            const drive = DriveController.get(editor);
+            const drive = DriveController.get();
             try {
                 await drive.createFile(name);
             } catch (err) {

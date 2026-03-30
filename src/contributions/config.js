@@ -1,4 +1,5 @@
 import { GapiAuthController } from "./auth";
+import { getContribution } from "../registry";
 import * as monaco from "../monaco";
 
 const CONTRIBUTION_ID = "driveMonaco.config";
@@ -14,8 +15,8 @@ const DEFAULTS = {
 export class ConfigController {
     static ID = CONTRIBUTION_ID;
 
-    static get(editor) {
-        return editor.getContribution(CONTRIBUTION_ID);
+    static get() {
+        return getContribution(CONTRIBUTION_ID);
     }
 
     constructor(editor) {
@@ -25,7 +26,7 @@ export class ConfigController {
         this._loadLocal();
         this._applyConfig();
 
-        const auth = GapiAuthController.get(editor);
+        const auth = GapiAuthController.get();
         auth.onLoggedInChanged((loggedIn) => {
             if (loggedIn && !import.meta.env.DEV) {
                 this._fetchDriveConfig();
@@ -79,7 +80,7 @@ export class ConfigController {
 
     async _fetchDriveConfig() {
         try {
-            const auth = GapiAuthController.get(this._editor);
+            const auth = GapiAuthController.get();
 
             const listResponse = await auth.executeWithRetry(() =>
                 gapi.client.drive.files.list({
@@ -110,7 +111,7 @@ export class ConfigController {
 
     async _saveToDrive() {
         try {
-            const auth = GapiAuthController.get(this._editor);
+            const auth = GapiAuthController.get();
             const token = auth.getAccessToken();
 
             const listResponse = await auth.executeWithRetry(() =>

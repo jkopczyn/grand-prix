@@ -1,5 +1,6 @@
 import { GapiAuthController } from "./auth";
 import { getUrlState, getLanguageForFilename } from "../utils";
+import { getContribution } from "../registry";
 import * as monaco from "../monaco";
 
 const CONTRIBUTION_ID = "driveMonaco.drive";
@@ -7,8 +8,8 @@ const CONTRIBUTION_ID = "driveMonaco.drive";
 export class DriveController {
     static ID = CONTRIBUTION_ID;
 
-    static get(editor) {
-        return editor.getContribution(CONTRIBUTION_ID);
+    static get() {
+        return getContribution(CONTRIBUTION_ID);
     }
 
     constructor(editor) {
@@ -30,7 +31,7 @@ export class DriveController {
             }
         });
 
-        const auth = GapiAuthController.get(editor);
+        const auth = GapiAuthController.get();
         auth.onLoggedInChanged((loggedIn) => {
             if (loggedIn) this._handleUrlState();
         });
@@ -53,7 +54,7 @@ export class DriveController {
     }
 
     async openFile(id) {
-        const auth = GapiAuthController.get(this._editor);
+        const auth = GapiAuthController.get();
 
         const metaResponse = await auth.executeWithRetry(() =>
             gapi.client.drive.files.get({
@@ -89,7 +90,7 @@ export class DriveController {
     async saveFile() {
         if (!this._fileId) return;
 
-        const auth = GapiAuthController.get(this._editor);
+        const auth = GapiAuthController.get();
         const token = auth.getAccessToken();
         const content = this._editor.getValue();
 
@@ -119,7 +120,7 @@ export class DriveController {
     }
 
     async createFile(name, folderId) {
-        const auth = GapiAuthController.get(this._editor);
+        const auth = GapiAuthController.get();
 
         const response = await auth.executeWithRetry(() =>
             gapi.client.drive.files.create({
