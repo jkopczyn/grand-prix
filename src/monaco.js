@@ -1,6 +1,17 @@
 // Selective Monaco imports for smaller bundle
 import "monaco-editor/esm/vs/editor/editor.all";
 
+// Standalone features (command palette, quick access, etc.)
+import "monaco-editor/esm/vs/editor/standalone/browser/accessibilityHelp/accessibilityHelp";
+import "monaco-editor/esm/vs/editor/standalone/browser/iPadShowKeyboard/iPadShowKeyboard";
+import "monaco-editor/esm/vs/editor/standalone/browser/inspectTokens/inspectTokens";
+import "monaco-editor/esm/vs/editor/standalone/browser/quickAccess/standaloneCommandsQuickAccess";
+import "monaco-editor/esm/vs/editor/standalone/browser/quickAccess/standaloneGotoLineQuickAccess";
+import "monaco-editor/esm/vs/editor/standalone/browser/quickAccess/standaloneGotoSymbolQuickAccess";
+import "monaco-editor/esm/vs/editor/standalone/browser/quickAccess/standaloneHelpQuickAccess";
+import "monaco-editor/esm/vs/editor/standalone/browser/referenceSearch/standaloneReferenceSearch";
+import "monaco-editor/esm/vs/editor/standalone/browser/toggleHighContrast/toggleHighContrast";
+
 // Language contributions
 import "monaco-editor/esm/vs/basic-languages/monaco.contribution";
 import "monaco-editor/esm/vs/language/json/monaco.contribution";
