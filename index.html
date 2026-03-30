@@ -4,10 +4,75 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Drive Monaco</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                    Roboto, sans-serif;
+                background: #1e1e1e;
+                color: #cccccc;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 100vh;
+            }
+            .container {
+                text-align: center;
+                max-width: 600px;
+                padding: 40px;
+            }
+            h1 {
+                color: #ffffff;
+                font-size: 2.5rem;
+                margin-bottom: 16px;
+            }
+            p {
+                font-size: 1.1rem;
+                line-height: 1.6;
+                margin-bottom: 32px;
+            }
+            .features {
+                text-align: left;
+                margin-bottom: 32px;
+            }
+            .features li {
+                list-style: none;
+                padding: 8px 0;
+                border-bottom: 1px solid #333;
+            }
+            .open-btn {
+                display: inline-block;
+                padding: 14px 32px;
+                font-size: 1rem;
+                background: #4285f4;
+                color: #ffffff;
+                text-decoration: none;
+                border-radius: 6px;
+            }
+            .open-btn:hover {
+                background: #3367d6;
+            }
+        </style>
     </head>
     <body>
-        <h1>Drive Monaco</h1>
-        <p>A Monaco-based text editor for Google Drive.</p>
-        <a href="/app/">Open Editor</a>
+        <div class="container">
+            <h1>Drive Monaco</h1>
+            <p>
+                A full-featured code editor powered by Monaco, integrated with
+                Google Drive for seamless file management.
+            </p>
+            <ul class="features">
+                <li>Syntax highlighting for 50+ languages</li>
+                <li>Open and save files directly from Google Drive</li>
+                <li>Settings sync across devices via Drive</li>
+                <li>Change tracking with edit margin indicators</li>
+                <li>Command palette with keyboard shortcuts</li>
+            </ul>
+            <a href="/app/" class="open-btn">Open Editor</a>
+        </div>
     </body>
 </html>
