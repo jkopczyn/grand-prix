@@ -12,10 +12,68 @@
                 width: 100%;
                 height: 100%;
                 overflow: hidden;
+                display: flex;
+                flex-direction: column;
+            }
+            #menubar {
+                display: flex;
+                background: #2d2d2d;
+                color: #cccccc;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                    Roboto, sans-serif;
+                font-size: 13px;
+                user-select: none;
+                flex-shrink: 0;
+            }
+            #menubar .menu-item {
+                position: relative;
+                padding: 4px 10px;
+                cursor: pointer;
+            }
+            #menubar .menu-item:hover {
+                background: #3e3e3e;
+            }
+            #menubar .menu-item.open {
+                background: #3e3e3e;
+            }
+            #menubar .menu-dropdown {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                background: #2d2d2d;
+                border: 1px solid #454545;
+                min-width: 220px;
+                z-index: 200;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+            }
+            #menubar .menu-item.open .menu-dropdown {
+                display: block;
+            }
+            #menubar .menu-dropdown .dropdown-item {
+                padding: 6px 24px 6px 12px;
+                display: flex;
+                justify-content: space-between;
+                cursor: pointer;
+                white-space: nowrap;
+            }
+            #menubar .menu-dropdown .dropdown-item:hover {
+                background: #094771;
+            }
+            #menubar .menu-dropdown .dropdown-item .shortcut {
+                color: #888888;
+                margin-left: 24px;
+                font-size: 12px;
+            }
+            #menubar .menu-dropdown .separator {
+                height: 1px;
+                background: #454545;
+                margin: 4px 0;
             }
             #editor {
                 width: 100%;
-                height: 100%;
+                flex: 1;
+                min-height: 0;
             }
             .edit-margin-changed {
                 background: #587c0c;
@@ -30,6 +88,7 @@
         </style>
     </head>
     <body>
+        <div id="menubar"></div>
         <div id="editor"></div>
 
         <script
