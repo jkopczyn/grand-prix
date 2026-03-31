@@ -31,6 +31,10 @@ const MENUS = [
                 label: "Toggle Whitespace",
                 action: "driveMonaco.action.toggleWhitespace",
             },
+            {
+                label: "Change Line Numbers",
+                action: "driveMonaco.action.changeLineNumbers",
+            },
         ],
     },
     {

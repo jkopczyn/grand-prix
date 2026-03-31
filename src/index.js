@@ -12,6 +12,7 @@ import { registerChangeThemeAction } from "./commands/changeTheme";
 import { registerChangeLanguageAction } from "./commands/changeLanguage";
 import { registerToggleWordWrapAction } from "./commands/toggleWordWrap";
 import { registerToggleWhitespaceAction } from "./commands/toggleWhitespace";
+import { registerChangeLineNumbersAction } from "./commands/changeLineNumbers";
 import { createMenubar } from "./menubar";
 import { getLanguageForFilename } from "./utils";
 
@@ -39,6 +40,7 @@ registerChangeThemeAction(editor);
 registerChangeLanguageAction(editor);
 registerToggleWordWrapAction(editor);
 registerToggleWhitespaceAction(editor);
+registerChangeLineNumbersAction(editor);
 
 createMenubar(editor);
 

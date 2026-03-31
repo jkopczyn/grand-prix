@@ -10,6 +10,7 @@ const DEFAULTS = {
     theme: "vs",
     wordWrap: "off",
     renderWhitespace: "none",
+    lineNumbers: "on",
 };
 
 export class ConfigController {
@@ -60,6 +61,7 @@ export class ConfigController {
         this._editor.updateOptions({
             wordWrap: this._config.wordWrap,
             renderWhitespace: this._config.renderWhitespace,
+            lineNumbers: this._config.lineNumbers,
         });
     }
 
