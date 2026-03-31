@@ -17,7 +17,7 @@ import { createMenubar } from "./menubar";
 import { getLanguageForFilename } from "./utils";
 
 const editor = monaco.editor.create(document.getElementById("editor"), {
-    value: "// Welcome to Drive Monaco\n// Press F1 to open the command palette\n",
+    value: "// Welcome to Grand Prix\n// Press F1 to open the command palette\n",
     language: "javascript",
     automaticLayout: true,
     minimap: { enabled: false },
@@ -46,7 +46,7 @@ createMenubar(editor);
 
 const devfile = new URLSearchParams(window.location.search).get("devfile");
 if (devfile) {
-    document.title = `${devfile} — Drive Monaco`;
+    document.title = `${devfile} — Grand Prix`;
     const lang = getLanguageForFilename(devfile);
     monaco.editor.setModelLanguage(editor.getModel(), lang);
 }

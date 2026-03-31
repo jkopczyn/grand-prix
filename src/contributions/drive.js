@@ -3,7 +3,7 @@ import { getUrlState, getLanguageForFilename } from "../utils";
 import { getContribution } from "../registry";
 import * as monaco from "../monaco";
 
-const CONTRIBUTION_ID = "driveMonaco.drive";
+const CONTRIBUTION_ID = "grandPrix.drive";
 
 export class DriveController {
     static ID = CONTRIBUTION_ID;
@@ -84,7 +84,7 @@ export class DriveController {
         monaco.editor.setModelLanguage(model, lang);
         this._editor.setValue(content);
 
-        document.title = `${this._fileName} — Drive Monaco`;
+        document.title = `${this._fileName} — Grand Prix`;
     }
 
     async saveFile() {

@@ -9,7 +9,7 @@ const OPTIONS = [
 
 export function registerChangeLineNumbersAction(editor) {
     editor.addAction({
-        id: "driveMonaco.action.changeLineNumbers",
+        id: "grandPrix.action.changeLineNumbers",
         label: "Change Line Numbers",
         run(editor) {
             const config = ConfigController.get();

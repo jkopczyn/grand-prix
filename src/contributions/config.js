@@ -2,8 +2,8 @@ import { GapiAuthController } from "./auth";
 import { getContribution } from "../registry";
 import * as monaco from "../monaco";
 
-const CONTRIBUTION_ID = "driveMonaco.config";
-const STORAGE_KEY = "driveMonaco.config";
+const CONTRIBUTION_ID = "grandPrix.config";
+const STORAGE_KEY = "grandPrix.config";
 const CONFIG_FILENAME = "config.json";
 
 const DEFAULTS = {

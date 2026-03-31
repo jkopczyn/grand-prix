@@ -1,6 +1,6 @@
 import { getContribution } from "../registry";
 
-const CONTRIBUTION_ID = "driveMonaco.editMargin";
+const CONTRIBUTION_ID = "grandPrix.editMargin";
 
 export class EditMarginController {
     static ID = CONTRIBUTION_ID;

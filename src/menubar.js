@@ -5,11 +5,11 @@ const MENUS = [
             {
                 label: "Save",
                 shortcut: "Ctrl+S",
-                action: "driveMonaco.action.save",
+                action: "grandPrix.action.save",
             },
             {
                 label: "Create New File",
-                action: "driveMonaco.action.createFile",
+                action: "grandPrix.action.createFile",
             },
         ],
     },
@@ -25,15 +25,15 @@ const MENUS = [
             {
                 label: "Toggle Word Wrap",
                 shortcut: "Alt+H",
-                action: "driveMonaco.action.toggleWordWrap",
+                action: "grandPrix.action.toggleWordWrap",
             },
             {
                 label: "Toggle Whitespace",
-                action: "driveMonaco.action.toggleWhitespace",
+                action: "grandPrix.action.toggleWhitespace",
             },
             {
                 label: "Change Line Numbers",
-                action: "driveMonaco.action.changeLineNumbers",
+                action: "grandPrix.action.changeLineNumbers",
             },
         ],
     },
@@ -42,11 +42,11 @@ const MENUS = [
         items: [
             {
                 label: "Change Theme",
-                action: "driveMonaco.action.changeTheme",
+                action: "grandPrix.action.changeTheme",
             },
             {
                 label: "Change Language",
-                action: "driveMonaco.action.changeLanguage",
+                action: "grandPrix.action.changeLanguage",
             },
         ],
     },

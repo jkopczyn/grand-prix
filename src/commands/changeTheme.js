@@ -9,7 +9,7 @@ const THEMES = [
 
 export function registerChangeThemeAction(editor) {
     editor.addAction({
-        id: "driveMonaco.action.changeTheme",
+        id: "grandPrix.action.changeTheme",
         label: "Change Theme",
         run(editor) {
             const config = ConfigController.get();

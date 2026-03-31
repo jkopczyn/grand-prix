@@ -2,7 +2,7 @@ import { ConfigController } from "../contributions/config";
 
 export function registerToggleWhitespaceAction(editor) {
     editor.addAction({
-        id: "driveMonaco.action.toggleWhitespace",
+        id: "grandPrix.action.toggleWhitespace",
         label: "Toggle Render Whitespace",
         run(editor) {
             const config = ConfigController.get();

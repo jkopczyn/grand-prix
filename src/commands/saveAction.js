@@ -4,7 +4,7 @@ import { EditMarginController } from "../contributions/editMargin";
 
 export function registerSaveAction(editor) {
     editor.addAction({
-        id: "driveMonaco.action.save",
+        id: "grandPrix.action.save",
         label: "Save File",
         keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS],
         async run(editor) {

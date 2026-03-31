@@ -1,8 +1,8 @@
 import { GapiAuthController } from "./auth";
 import { getContribution } from "../registry";
 
-const CONTRIBUTION_ID = "driveMonaco.welcome";
-const WIDGET_ID = "driveMonaco.welcome.widget";
+const CONTRIBUTION_ID = "grandPrix.welcome";
+const WIDGET_ID = "grandPrix.welcome.widget";
 
 export class WelcomeModal {
     static ID = CONTRIBUTION_ID;
@@ -72,7 +72,7 @@ export class WelcomeModal {
         });
 
         const title = document.createElement("h2");
-        title.textContent = "Drive Monaco";
+        title.textContent = "Grand Prix";
         title.style.margin = "0 0 12px";
         title.style.color = "#ffffff";
 

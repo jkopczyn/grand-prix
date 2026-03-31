@@ -3,7 +3,7 @@ import { ConfigController } from "../contributions/config";
 
 export function registerToggleWordWrapAction(editor) {
     editor.addAction({
-        id: "driveMonaco.action.toggleWordWrap",
+        id: "grandPrix.action.toggleWordWrap",
         label: "Toggle Word Wrap",
         keybindings: [monaco.KeyMod.Alt | monaco.KeyCode.KeyH],
         run(editor) {

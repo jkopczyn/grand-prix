@@ -1,8 +1,8 @@
 import { CLIENT_ID, DISCOVERY_DOC, SCOPES } from "../gapi_consts";
 import { getContribution } from "../registry";
 
-const CONTRIBUTION_ID = "driveMonaco.auth";
-const TOKEN_KEY = "driveMonaco.token";
+const CONTRIBUTION_ID = "grandPrix.auth";
+const TOKEN_KEY = "grandPrix.token";
 
 export class GapiAuthController {
     static ID = CONTRIBUTION_ID;

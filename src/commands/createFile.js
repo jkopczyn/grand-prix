@@ -2,7 +2,7 @@ import { DriveController } from "../contributions/drive";
 
 export function registerCreateFileAction(editor) {
     editor.addAction({
-        id: "driveMonaco.action.createFile",
+        id: "grandPrix.action.createFile",
         label: "Create New File",
         async run(editor) {
             const name = prompt("Enter file name:");
