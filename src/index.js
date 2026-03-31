@@ -13,6 +13,7 @@ import { registerChangeLanguageAction } from "./commands/changeLanguage";
 import { registerToggleWordWrapAction } from "./commands/toggleWordWrap";
 import { registerToggleWhitespaceAction } from "./commands/toggleWhitespace";
 import { createMenubar } from "./menubar";
+import { getLanguageForFilename } from "./utils";
 
 const editor = monaco.editor.create(document.getElementById("editor"), {
     value: "// Welcome to Drive Monaco\n// Press F1 to open the command palette\n",
@@ -40,3 +41,10 @@ registerToggleWordWrapAction(editor);
 registerToggleWhitespaceAction(editor);
 
 createMenubar(editor);
+
+const devfile = new URLSearchParams(window.location.search).get("devfile");
+if (devfile) {
+    document.title = `${devfile} — Drive Monaco`;
+    const lang = getLanguageForFilename(devfile);
+    monaco.editor.setModelLanguage(editor.getModel(), lang);
+}
