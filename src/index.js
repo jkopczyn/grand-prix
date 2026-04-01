@@ -8,6 +8,7 @@ import { WelcomeModal } from "./contributions/welcome";
 import { EditMarginController } from "./contributions/editMargin";
 import { registerSaveAction } from "./commands/saveAction";
 import { registerCreateFileAction } from "./commands/createFile";
+import { registerOpenFileAction } from "./commands/openFile";
 import { registerChangeThemeAction } from "./commands/changeTheme";
 import { registerChangeLanguageAction } from "./commands/changeLanguage";
 import { registerToggleWordWrapAction } from "./commands/toggleWordWrap";
@@ -35,6 +36,7 @@ registerContribution(
 );
 
 registerSaveAction(editor);
+registerOpenFileAction(editor);
 registerCreateFileAction(editor);
 registerChangeThemeAction(editor);
 registerChangeLanguageAction(editor);

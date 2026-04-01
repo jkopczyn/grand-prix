@@ -3,10 +3,16 @@ const MENUS = [
         label: "File",
         items: [
             {
+                label: "Open File",
+                shortcut: "Ctrl+O",
+                action: "grandPrix.action.openFile",
+            },
+            {
                 label: "Save",
                 shortcut: "Ctrl+S",
                 action: "grandPrix.action.save",
             },
+            { separator: true },
             {
                 label: "Create New File",
                 action: "grandPrix.action.createFile",

@@ -110,7 +110,7 @@ export class GapiAuthController {
 
     async _initGapi() {
         this._gapiReady = true;
-        await new Promise((resolve) => gapi.load("client", resolve));
+        await new Promise((resolve) => gapi.load("client:picker", resolve));
         await gapi.client.init({ discoveryDocs: [DISCOVERY_DOC] });
     }
 
