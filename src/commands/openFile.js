@@ -1,7 +1,9 @@
 import * as monaco from "../monaco";
 import { GapiAuthController } from "../contributions/auth";
 import { DriveController } from "../contributions/drive";
-import { API_KEY } from "../gapi_consts";
+import { API_KEY, CLIENT_ID } from "../gapi_consts";
+
+const APP_ID = CLIENT_ID.split("-")[0];
 
 export function registerOpenFileAction(editor) {
     editor.addAction({
@@ -24,6 +26,8 @@ export function registerOpenFileAction(editor) {
                 .addView(view)
                 .setOAuthToken(token)
                 .setDeveloperKey(API_KEY)
+                .setAppId(APP_ID)
+                .setOrigin(window.location.protocol + "//" + window.location.host)
                 .setCallback(async (data) => {
                     if (data.action === google.picker.Action.PICKED) {
                         const fileId = data.docs[0].id;
