@@ -17,6 +17,11 @@ const MENUS = [
                 shortcut: "Ctrl+S",
                 action: "grandPrix.action.save",
             },
+            {
+                label: "Save Locally",
+                shortcut: "Ctrl+Shift+S",
+                action: "grandPrix.action.saveLocally",
+            },
             { separator: true },
             {
                 label: "Create New File",

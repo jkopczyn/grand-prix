@@ -9,13 +9,16 @@ export function registerChangeLanguageAction(editor) {
             const current = editor.getModel()?.getLanguageId();
             const items = monaco.languages
                 .getLanguages()
+                .sort((a, b) => a.id.localeCompare(b.id))
                 .map((l) => ({
-                    label: l.id,
+                    label: l.aliases?.[0] || l.id,
                     value: l.id,
-                    description: l.aliases?.[0],
+                    description: l.id,
                     current: l.id === current,
-                }))
-                .sort((a, b) => a.label.localeCompare(b.label));
+                }));
+
+            const ptIdx = items.findIndex((i) => i.value === "plaintext");
+            if (ptIdx > 0) items.unshift(items.splice(ptIdx, 1)[0]);
 
             const value = await showPicker(items, {
                 placeholder: "Select language mode",
