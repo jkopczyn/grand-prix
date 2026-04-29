@@ -29,7 +29,7 @@ export class ConfigController {
 
         const auth = GapiAuthController.get();
         auth.onLoggedInChanged((loggedIn) => {
-            if (loggedIn && !import.meta.env.DEV) {
+            if (loggedIn && !auth.isDevFallback) {
                 this._fetchDriveConfig();
             }
         });
@@ -47,7 +47,8 @@ export class ConfigController {
         this._config[key] = value;
         this._applyConfig();
         this._saveLocal();
-        if (!import.meta.env.DEV) {
+        const auth = GapiAuthController.get();
+        if (!auth.isDevFallback) {
             this._saveToDrive();
         }
     }

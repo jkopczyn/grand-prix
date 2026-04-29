@@ -17,13 +17,9 @@ export class GapiAuthController {
         this._listeners = [];
         this._tokenClient = null;
         this._gapiReady = false;
+        this._gapiInitStarted = false;
         this._gsiReady = false;
-
-        if (import.meta.env.DEV) {
-            this._loggedIn = true;
-            this._fireLoggedInChanged();
-            return;
-        }
+        this._devFallback = false;
 
         this._restoreToken();
         this._setupHandleClientLoad();
@@ -35,6 +31,10 @@ export class GapiAuthController {
 
     get isLoggedIn() {
         return this._loggedIn;
+    }
+
+    get isDevFallback() {
+        return this._devFallback;
     }
 
     onLoggedInChanged(callback) {
@@ -49,42 +49,104 @@ export class GapiAuthController {
     }
 
     async requestToken() {
-        if (import.meta.env.DEV) return;
+        if (this._devFallback) {
+            this._setLoggedIn(true);
+            return;
+        }
+
+        if (!this._tokenClient) {
+            return this._handleAuthFailure(
+                new Error("GSI token client not initialized"),
+                "requestToken: GSI not loaded"
+            );
+        }
 
         return new Promise((resolve, reject) => {
             this._tokenClient.callback = (response) => {
                 if (response.error) {
-                    reject(response);
+                    this._handleAuthFailure(
+                        response,
+                        "requestToken: token request errored"
+                    )
+                        .then(resolve)
+                        .catch(reject);
                     return;
                 }
                 this._storeToken(response);
                 this._setLoggedIn(true);
                 resolve(response);
             };
-            this._tokenClient.requestAccessToken();
+            try {
+                this._tokenClient.requestAccessToken();
+            } catch (err) {
+                this._handleAuthFailure(
+                    err,
+                    "requestToken: requestAccessToken threw"
+                )
+                    .then(resolve)
+                    .catch(reject);
+            }
         });
     }
 
     getAccessToken() {
-        if (import.meta.env.DEV) return "dev-token";
-        const token = gapi.client.getToken();
+        if (this._devFallback) return "dev-token";
+        const token = gapi?.client?.getToken?.();
         return token?.access_token;
     }
 
     /**
      * Execute a GAPI request with auto-retry on 401/403.
+     * In DEV, if the call fails because GAPI isn't usable, engages dev fallback
+     * and returns undefined so callers don't crash.
      */
     async executeWithRetry(requestFn) {
+        if (this._devFallback) {
+            console.warn(
+                "[auth] DEV fallback active — skipping GAPI request"
+            );
+            return undefined;
+        }
+
         try {
             return await requestFn();
         } catch (err) {
             const status = err?.status || err?.result?.error?.code;
             if (status === 401 || status === 403) {
                 await this.requestToken();
+                if (this._devFallback) return undefined;
                 return await requestFn();
+            }
+            // Likely "gapi.client.drive is undefined" or similar — GAPI not ready
+            if (import.meta.env.DEV && !this._gapiReady) {
+                this._engageDevFallback(
+                    "executeWithRetry: GAPI not ready in DEV",
+                    err
+                );
+                return undefined;
             }
             throw err;
         }
+    }
+
+    // --- Dev fallback ---
+
+    _engageDevFallback(reason, err) {
+        if (this._devFallback) return;
+        this._devFallback = true;
+        console.error(
+            `[auth] Engaging DEV fallback (no real Drive auth). Reason: ${reason}`,
+            err ?? ""
+        );
+        this._setLoggedIn(true);
+    }
+
+    async _handleAuthFailure(err, reason) {
+        if (import.meta.env.DEV) {
+            this._engageDevFallback(reason, err);
+            return;
+        }
+        throw err;
     }
 
     dispose() {}
@@ -95,7 +157,7 @@ export class GapiAuthController {
         const originalHandler = window.handleClientLoad;
         window.handleClientLoad = () => {
             originalHandler?.();
-            if (typeof gapi !== "undefined" && !this._gapiReady) {
+            if (typeof gapi !== "undefined" && !this._gapiInitStarted) {
                 this._initGapi();
             }
             if (typeof google !== "undefined" && !this._gsiReady) {
@@ -104,23 +166,43 @@ export class GapiAuthController {
         };
 
         // In case scripts already loaded before this contribution initialized
-        if (typeof gapi !== "undefined") this._initGapi();
-        if (typeof google !== "undefined") this._initGsi();
+        if (typeof gapi !== "undefined" && !this._gapiInitStarted) {
+            this._initGapi();
+        }
+        if (typeof google !== "undefined" && !this._gsiReady) {
+            this._initGsi();
+        }
     }
 
     async _initGapi() {
-        this._gapiReady = true;
-        await new Promise((resolve) => gapi.load("client:picker", resolve));
-        await gapi.client.init({ discoveryDocs: [DISCOVERY_DOC] });
+        if (this._gapiInitStarted) return;
+        this._gapiInitStarted = true;
+        try {
+            await new Promise((resolve) => gapi.load("client:picker", resolve));
+            await gapi.client.init({ discoveryDocs: [DISCOVERY_DOC] });
+            this._gapiReady = true;
+        } catch (err) {
+            console.error("[auth] GAPI init failed:", err);
+            if (import.meta.env.DEV) {
+                this._engageDevFallback("GAPI init failed in DEV", err);
+            }
+        }
     }
 
     _initGsi() {
-        this._gsiReady = true;
-        this._tokenClient = google.accounts.oauth2.initTokenClient({
-            client_id: CLIENT_ID,
-            scope: SCOPES,
-            callback: () => {},
-        });
+        try {
+            this._tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CLIENT_ID,
+                scope: SCOPES,
+                callback: () => {},
+            });
+            this._gsiReady = true;
+        } catch (err) {
+            console.error("[auth] GSI init failed:", err);
+            if (import.meta.env.DEV) {
+                this._engageDevFallback("GSI init failed in DEV", err);
+            }
+        }
     }
 
     _restoreToken() {
@@ -134,9 +216,12 @@ export class GapiAuthController {
                 return;
             }
 
-            // Will be applied once gapi is loaded
+            // Wait until gapi.client.init has loaded the discovery doc — listeners
+            // (e.g. ConfigController) call gapi.client.drive.* immediately on login,
+            // which is undefined until init completes.
             const applyToken = () => {
-                if (typeof gapi !== "undefined" && gapi.client) {
+                if (this._devFallback) return;
+                if (this._gapiReady) {
                     gapi.client.setToken(token);
                     this._setLoggedIn(true);
                 } else {
