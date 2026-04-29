@@ -16,6 +16,13 @@ export function registerOpenFileAction(editor) {
                 await auth.requestToken();
             }
 
+            // Validate token is actually valid with Google before opening Picker
+            await auth.executeWithRetry(() =>
+                gapi.client.drive.files.list({
+                    pageSize: 1,
+                    fields: "files(id)",
+                })
+            );
             const token = auth.getAccessToken();
 
             const view = new google.picker.DocsView()
@@ -27,7 +34,7 @@ export function registerOpenFileAction(editor) {
                 .setOAuthToken(token)
                 .setDeveloperKey(API_KEY)
                 .setAppId(APP_ID)
-                .setOrigin(window.location.protocol + "//" + window.location.host)
+                .setOrigin(window.location.protocol + "//" + window.location.host + "/grand-prix/")
                 .setCallback(async (data) => {
                     if (data.action === google.picker.Action.PICKED) {
                         const fileId = data.docs[0].id;
