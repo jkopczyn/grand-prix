@@ -4,6 +4,7 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Grand Prix</title>
+        <link rel="icon" type="image/png" href="formula-one-transparent.png" />
         <style>
             * {
                 margin: 0;
@@ -25,6 +26,11 @@
                 max-width: 600px;
                 padding: 40px;
             }
+            .logo {
+                width: 256px;
+                height: 256px;
+                margin-bottom: 24px;
+            }
             h1 {
                 color: #ffffff;
                 font-size: 2.5rem;
@@ -35,44 +41,49 @@
                 line-height: 1.6;
                 margin-bottom: 32px;
             }
-            .features {
-                text-align: left;
-                margin-bottom: 32px;
+            .button-row {
+                display: flex;
+                gap: 12px;
+                justify-content: center;
             }
-            .features li {
-                list-style: none;
-                padding: 8px 0;
-                border-bottom: 1px solid #333;
-            }
-            .open-btn {
+            .btn {
                 display: inline-block;
                 padding: 14px 32px;
                 font-size: 1rem;
-                background: #4285f4;
                 color: #ffffff;
                 text-decoration: none;
                 border-radius: 6px;
             }
-            .open-btn:hover {
+            .btn-primary {
+                background: #4285f4;
+            }
+            .btn-primary:hover {
                 background: #3367d6;
+            }
+            .btn-secondary {
+                background: #3a3a3a;
+            }
+            .btn-secondary:hover {
+                background: #4a4a4a;
             }
         </style>
     </head>
     <body>
         <div class="container">
+            <img src="formula-one-transparent.png" alt="" class="logo" />
             <h1>Grand Prix</h1>
             <p>
-                A full-featured code editor powered by Monaco, integrated with
-                Google Drive for seamless file management.
+                Monaco Drive - A full-featured code and plaintext editor,
+                Monaco-powered on Google Drive for seamless file editing.
             </p>
-            <ul class="features">
-                <li>Syntax highlighting for 50+ languages</li>
-                <li>Open and save files directly from Google Drive</li>
-                <li>Settings sync across devices via Drive</li>
-                <li>Change tracking with edit margin indicators</li>
-                <li>Command palette with keyboard shortcuts</li>
-            </ul>
-            <a href="/app/" class="open-btn">Open Editor</a>
+            <div class="button-row">
+                <a href="app/" class="btn btn-primary">Open Editor</a>
+                <a
+                    href="app/?state=%7B%22action%22%3A%22create%22%7D"
+                    class="btn btn-secondary"
+                    >New File</a
+                >
+            </div>
         </div>
     </body>
 </html>
