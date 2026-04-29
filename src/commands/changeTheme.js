@@ -1,4 +1,5 @@
 import { ConfigController } from "../contributions/config";
+import { showPicker } from "../picker";
 
 const THEMES = [
     { label: "Light (vs)", value: "vs" },
@@ -11,21 +12,20 @@ export function registerChangeThemeAction(editor) {
     editor.addAction({
         id: "grandPrix.action.changeTheme",
         label: "Change Theme",
-        run(editor) {
+        async run() {
             const config = ConfigController.get();
             const current = config.get("theme");
 
-            const choice = prompt(
-                THEMES.map(
-                    (t, i) =>
-                        `${i + 1}. ${t.label}${t.value === current ? " (current)" : ""}`
-                ).join("\n") + "\n\nEnter number:"
-            );
+            const items = THEMES.map((t) => ({
+                ...t,
+                current: t.value === current,
+            }));
 
-            const index = parseInt(choice, 10) - 1;
-            if (index >= 0 && index < THEMES.length) {
-                config.set("theme", THEMES[index].value);
-            }
+            const value = await showPicker(items, {
+                placeholder: "Select theme",
+            });
+            if (value == null) return;
+            config.set("theme", value);
         },
     });
 }

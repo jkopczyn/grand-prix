@@ -1,23 +1,27 @@
 import * as monaco from "../monaco";
+import { showPicker } from "../picker";
 
 export function registerChangeLanguageAction(editor) {
     editor.addAction({
         id: "grandPrix.action.changeLanguage",
         label: "Change Language Mode",
-        run(editor) {
-            const languages = monaco.languages
+        async run(editor) {
+            const current = editor.getModel()?.getLanguageId();
+            const items = monaco.languages
                 .getLanguages()
-                .map((l) => l.id)
-                .sort();
+                .map((l) => ({
+                    label: l.id,
+                    value: l.id,
+                    description: l.aliases?.[0],
+                    current: l.id === current,
+                }))
+                .sort((a, b) => a.label.localeCompare(b.label));
 
-            const current = editor.getModel().getLanguageId();
-            const choice = prompt(
-                `Current: ${current}\n\nAvailable languages:\n${languages.join(", ")}\n\nEnter language:`
-            );
-
-            if (choice && languages.includes(choice)) {
-                monaco.editor.setModelLanguage(editor.getModel(), choice);
-            }
+            const value = await showPicker(items, {
+                placeholder: "Select language mode",
+            });
+            if (value == null) return;
+            monaco.editor.setModelLanguage(editor.getModel(), value);
         },
     });
 }

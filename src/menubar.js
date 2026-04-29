@@ -3,6 +3,11 @@ const MENUS = [
         label: "File",
         items: [
             {
+                label: "Sign in to Google",
+                action: "grandPrix.action.signIn",
+            },
+            { separator: true },
+            {
                 label: "Open File",
                 shortcut: "Ctrl+O",
                 action: "grandPrix.action.openFile",

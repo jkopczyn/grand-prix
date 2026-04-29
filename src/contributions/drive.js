@@ -36,6 +36,15 @@ export class DriveController {
         auth.onLoggedInChanged((loggedIn) => {
             if (loggedIn) this._handleUrlState();
         });
+
+        // If the user arrived via Drive "Open With" (?state=...), they
+        // explicitly initiated an action that requires auth — prompt now.
+        // Other entrypoints (cold-loading the editor) do not auto-prompt.
+        if (getUrlState() && !auth.isLoggedIn) {
+            auth.requestToken().catch((err) => {
+                console.error("Auth for URL state failed:", err);
+            });
+        }
     }
 
     getId() {

@@ -54,6 +54,12 @@ export class GapiAuthController {
             return;
         }
 
+        // GSI script may still be loading when this is called (e.g. from a
+        // URL-state-driven open at page load). Wait briefly before giving up.
+        if (!this._tokenClient) {
+            await this._waitForGsi();
+        }
+
         if (!this._tokenClient) {
             return this._handleAuthFailure(
                 new Error("GSI token client not initialized"),
@@ -147,6 +153,14 @@ export class GapiAuthController {
             return;
         }
         throw err;
+    }
+
+    async _waitForGsi(timeoutMs = 10000) {
+        const start = Date.now();
+        while (!this._tokenClient && !this._devFallback) {
+            if (Date.now() - start > timeoutMs) return;
+            await new Promise((r) => setTimeout(r, 50));
+        }
     }
 
     dispose() {}
