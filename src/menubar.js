@@ -38,6 +38,10 @@ const MENUS = [
                 action: "grandPrix.action.toggleWhitespace",
             },
             {
+                label: "Toggle Autocomplete",
+                action: "grandPrix.action.toggleAutocomplete",
+            },
+            {
                 label: "Change Line Numbers",
                 action: "grandPrix.action.changeLineNumbers",
             },

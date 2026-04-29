@@ -1,4 +1,5 @@
 import { GapiAuthController } from "./auth";
+import { DriveController } from "./drive";
 import { getContribution } from "../registry";
 import * as monaco from "../monaco";
 
@@ -11,6 +12,7 @@ const DEFAULTS = {
     wordWrap: "off",
     renderWhitespace: "none",
     lineNumbers: "on",
+    autocompleteByLanguage: {},
 };
 
 export class ConfigController {
@@ -26,6 +28,9 @@ export class ConfigController {
 
         this._loadLocal();
         this._applyConfig();
+
+        // Per-language autocomplete depends on the current model language.
+        this._editor.onDidChangeModelLanguage(() => this._applyConfig());
 
         const auth = GapiAuthController.get();
         auth.onLoggedInChanged((loggedIn) => {
@@ -53,16 +58,50 @@ export class ConfigController {
         }
     }
 
+    getEffectiveAutocomplete() {
+        const lang = this._editor.getModel()?.getLanguageId();
+        const v = this._config.autocompleteByLanguage?.[lang];
+        if (v === "on") return true;
+        if (v === "off") return false;
+        // Smart default: off for plaintext-style files. Check both the
+        // Monaco language and the filename — for newly-created files the
+        // language may briefly lag behind the filename being assigned.
+        if (lang === "plaintext") return false;
+        const fileName = DriveController.get()?.fileName;
+        if (fileName) {
+            const base = fileName.split("/").pop();
+            if (!base.includes(".") || base.endsWith(".txt")) return false;
+        }
+        return true;
+    }
+
+    setAutocompleteForCurrentLanguage(value) {
+        const lang = this._editor.getModel()?.getLanguageId();
+        if (!lang) return;
+        const next = {
+            ...this._config.autocompleteByLanguage,
+            [lang]: value,
+        };
+        this.set("autocompleteByLanguage", next);
+    }
+
+    applyConfig() {
+        this._applyConfig();
+    }
+
     dispose() {}
 
     // --- Private ---
 
     _applyConfig() {
         monaco.editor.setTheme(this._config.theme);
+        const autocomplete = this.getEffectiveAutocomplete();
         this._editor.updateOptions({
             wordWrap: this._config.wordWrap,
             renderWhitespace: this._config.renderWhitespace,
             lineNumbers: this._config.lineNumbers,
+            quickSuggestions: autocomplete,
+            suggestOnTriggerCharacters: autocomplete,
         });
     }
 

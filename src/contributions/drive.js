@@ -1,4 +1,5 @@
 import { GapiAuthController } from "./auth";
+import { ConfigController } from "./config";
 import { getUrlState, getLanguageForFilename } from "../utils";
 import { getContribution } from "../registry";
 import * as monaco from "../monaco";
@@ -83,6 +84,10 @@ export class DriveController {
         const model = this._editor.getModel();
         monaco.editor.setModelLanguage(model, lang);
         this._editor.setValue(content);
+
+        // Re-apply config so per-language autocomplete settings (and the
+        // filename-aware smart default) reflect the just-opened file.
+        ConfigController.get()?.applyConfig();
 
         document.title = `${this._fileName} — Grand Prix`;
     }
