@@ -85,7 +85,46 @@ export class ConfigController {
         this.set("autocompleteByLanguage", next);
     }
 
+    clearAutocompleteForCurrentLanguage() {
+        const lang = this._editor.getModel()?.getLanguageId();
+        if (!lang) return;
+        const next = { ...this._config.autocompleteByLanguage };
+        delete next[lang];
+        this.set("autocompleteByLanguage", next);
+    }
+
+    getAutocompleteOverrideForCurrentLanguage() {
+        const lang = this._editor.getModel()?.getLanguageId();
+        return this._config.autocompleteByLanguage?.[lang];
+    }
+
     applyConfig() {
+        this._applyConfig();
+    }
+
+    async reset() {
+        localStorage.removeItem(STORAGE_KEY);
+        const auth = GapiAuthController.get();
+        if (!auth.isDevFallback) {
+            try {
+                const listResponse = await auth.executeWithRetry(() =>
+                    gapi.client.drive.files.list({
+                        spaces: "appDataFolder",
+                        q: `name = '${CONFIG_FILENAME}'`,
+                        fields: "files(id)",
+                    })
+                );
+                const files = listResponse?.result?.files;
+                if (files && files.length > 0) {
+                    await auth.executeWithRetry(() =>
+                        gapi.client.drive.files.delete({ fileId: files[0].id })
+                    );
+                }
+            } catch (err) {
+                console.error("[config] Failed to clear Drive config:", err);
+            }
+        }
+        this._config = { ...DEFAULTS };
         this._applyConfig();
     }
 

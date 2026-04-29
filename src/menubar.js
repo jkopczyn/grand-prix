@@ -38,8 +38,8 @@ const MENUS = [
                 action: "grandPrix.action.toggleWhitespace",
             },
             {
-                label: "Toggle Autocomplete",
-                action: "grandPrix.action.toggleAutocomplete",
+                label: "Configure Autocomplete",
+                action: "grandPrix.action.changeAutocomplete",
             },
             {
                 label: "Change Line Numbers",
@@ -57,6 +57,11 @@ const MENUS = [
             {
                 label: "Change Language",
                 action: "grandPrix.action.changeLanguage",
+            },
+            { separator: true },
+            {
+                label: "Reset Configuration",
+                action: "grandPrix.action.resetConfig",
             },
         ],
     },

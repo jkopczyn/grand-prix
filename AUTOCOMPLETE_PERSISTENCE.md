@@ -42,7 +42,9 @@ Map of language ID → user override. Smart default fills in for unset entries.
 ## Implementation pointers
 
 - Config key: `autocompleteByLanguage` in `src/contributions/config.js`.
-- Effective value resolution: `ConfigController.getEffectiveAutocomplete()`.
-- Toggle writes via `ConfigController.setAutocompleteForCurrentLanguage()`.
-- `_applyConfig` re-evaluates on every model-language change (`editor.onDidChangeModelLanguage`).
+- Effective value resolution: `ConfigController.getEffectiveAutocomplete()`. Smart default checks both Monaco language (`plaintext` → off) and defaults to none (not JS), updating to the Drive filename once that is connected.
+- Per-language writes: `ConfigController.setAutocompleteForCurrentLanguage(value)`.
+- Per-language clear (revert to "auto"): `ConfigController.clearAutocompleteForCurrentLanguage()`.
+- UI: View → "Configure Autocomplete" presents a 3-option picker (Auto / On / Off) scoped to the current model's language.
+- `_applyConfig` re-evaluates on every model-language change (`editor.onDidChangeModelLanguage`) AND is explicitly called from `DriveController.openFile` after `setModelLanguage` to guarantee re-evaluation when files are opened.
 - Monaco options affected: `quickSuggestions` and `suggestOnTriggerCharacters`.

@@ -13,8 +13,9 @@ import { registerChangeThemeAction } from "./commands/changeTheme";
 import { registerChangeLanguageAction } from "./commands/changeLanguage";
 import { registerToggleWordWrapAction } from "./commands/toggleWordWrap";
 import { registerToggleWhitespaceAction } from "./commands/toggleWhitespace";
-import { registerToggleAutocompleteAction } from "./commands/toggleAutocomplete";
+import { registerChangeAutocompleteAction } from "./commands/changeAutocomplete";
 import { registerChangeLineNumbersAction } from "./commands/changeLineNumbers";
+import { registerResetConfigAction } from "./commands/resetConfig";
 import { createMenubar } from "./menubar";
 import { getLanguageForFilename } from "./utils";
 
@@ -43,8 +44,9 @@ registerChangeThemeAction(editor);
 registerChangeLanguageAction(editor);
 registerToggleWordWrapAction(editor);
 registerToggleWhitespaceAction(editor);
-registerToggleAutocompleteAction(editor);
+registerChangeAutocompleteAction(editor);
 registerChangeLineNumbersAction(editor);
+registerResetConfigAction(editor);
 
 createMenubar(editor);
 
