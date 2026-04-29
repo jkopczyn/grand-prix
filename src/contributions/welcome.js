@@ -2,7 +2,6 @@ import { GapiAuthController } from "./auth";
 import { getContribution } from "../registry";
 
 const CONTRIBUTION_ID = "grandPrix.welcome";
-const WIDGET_ID = "grandPrix.welcome.widget";
 
 export class WelcomeModal {
     static ID = CONTRIBUTION_ID;
@@ -14,7 +13,6 @@ export class WelcomeModal {
     constructor(editor) {
         this._editor = editor;
         this._domNode = null;
-        this._widget = null;
         this._visible = false;
 
         const auth = GapiAuthController.get();
@@ -48,16 +46,16 @@ export class WelcomeModal {
 
         this._domNode = document.createElement("div");
         Object.assign(this._domNode.style, {
-            position: "absolute",
+            position: "fixed",
             top: "0",
             left: "0",
-            width: "100%",
-            height: "100%",
+            width: "100vw",
+            height: "100vh",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             background: "rgba(0, 0, 0, 0.5)",
-            zIndex: "100",
+            zIndex: "1000",
         });
 
         const card = document.createElement("div");
@@ -103,20 +101,13 @@ export class WelcomeModal {
         card.appendChild(button);
         this._domNode.appendChild(card);
 
-        this._widget = {
-            getId: () => WIDGET_ID,
-            getDomNode: () => this._domNode,
-            getPosition: () => null,
-        };
-
-        this._editor.addOverlayWidget(this._widget);
+        document.body.appendChild(this._domNode);
     }
 
     _hide() {
         if (!this._visible) return;
         this._visible = false;
-        this._editor.removeOverlayWidget(this._widget);
-        this._widget = null;
+        this._domNode.remove();
         this._domNode = null;
     }
 }
