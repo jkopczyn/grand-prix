@@ -4,6 +4,7 @@ import { registerContribution } from "./registry";
 import { GapiAuthController } from "./contributions/auth";
 import { DriveController } from "./contributions/drive";
 import { ConfigController } from "./contributions/config";
+import { ConnectBanner } from "./contributions/connectBanner";
 import { EditMarginController } from "./contributions/editMargin";
 import { registerSaveAction } from "./commands/saveAction";
 import { registerCreateFileAction } from "./commands/createFile";
@@ -31,6 +32,7 @@ const editor = monaco.editor.create(document.getElementById("editor"), {
 registerContribution(GapiAuthController.ID, new GapiAuthController(editor));
 registerContribution(DriveController.ID, new DriveController(editor));
 registerContribution(ConfigController.ID, new ConfigController(editor));
+registerContribution(ConnectBanner.ID, new ConnectBanner(editor));
 registerContribution(
     EditMarginController.ID,
     new EditMarginController(editor)
