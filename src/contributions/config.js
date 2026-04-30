@@ -5,7 +5,9 @@ import * as monaco from "../monaco";
 
 const CONTRIBUTION_ID = "grandPrix.config";
 const STORAGE_KEY = "grandPrix.config";
+const DIRTY_KEY = "grandPrix.config.dirty";
 const CONFIG_FILENAME = "config.json";
+const PUSH_DEBOUNCE_MS = 3000;
 
 const DEFAULTS = {
     theme: "vs",
@@ -24,7 +26,10 @@ export class ConfigController {
 
     constructor(editor) {
         this._editor = editor;
-        this._config = { ...DEFAULTS };
+        this._config = { ...DEFAULTS, autocompleteByLanguage: {} };
+        this._dirty = localStorage.getItem(DIRTY_KEY) === "1";
+        this._pushTimer = null;
+        this._didSetListeners = [];
 
         this._loadLocal();
         this._applyConfig();
@@ -34,9 +39,22 @@ export class ConfigController {
 
         const auth = GapiAuthController.get();
         auth.onLoggedInChanged((loggedIn) => {
-            if (loggedIn && !auth.isDevFallback) {
-                this._fetchDriveConfig();
-            }
+            if (!loggedIn || auth.isDevFallback) return;
+            // Local-first reconciliation: dirty local wins, otherwise pull.
+            if (this._dirty) this._flushPush();
+            else this._fetchDriveConfig();
+        });
+
+        // If we boot up already-logged-in with a dirty queue (e.g. tab closed
+        // before debounce flushed last session), push as soon as GAPI is ready.
+        if (this._dirty && auth.isLoggedIn && !auth.isDevFallback) {
+            this._schedulePush();
+        }
+
+        const flush = () => this._flushPush({ keepalive: true });
+        window.addEventListener("beforeunload", flush);
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "hidden") flush();
         });
     }
 
@@ -52,10 +70,23 @@ export class ConfigController {
         this._config[key] = value;
         this._applyConfig();
         this._saveLocal();
+        this._markDirty(true);
         const auth = GapiAuthController.get();
-        if (!auth.isDevFallback) {
-            this._saveToDrive();
+        if (auth.isLoggedIn && !auth.isDevFallback) {
+            this._schedulePush();
         }
+        for (const cb of this._didSetListeners) cb(key, value);
+    }
+
+    onDidSet(callback) {
+        this._didSetListeners.push(callback);
+        return {
+            dispose: () => {
+                this._didSetListeners = this._didSetListeners.filter(
+                    (cb) => cb !== callback
+                );
+            },
+        };
     }
 
     getEffectiveAutocomplete() {
@@ -104,6 +135,9 @@ export class ConfigController {
 
     async reset() {
         localStorage.removeItem(STORAGE_KEY);
+        this._markDirty(false);
+        clearTimeout(this._pushTimer);
+        this._pushTimer = null;
         // Reset in-memory state and re-apply *before* the Drive delete so
         // the user sees defaults immediately even if Drive is slow/offline.
         // Use a fresh object for the per-language map so mutations after
@@ -137,6 +171,30 @@ export class ConfigController {
     dispose() {}
 
     // --- Private ---
+
+    _markDirty(value) {
+        this._dirty = value;
+        if (value) localStorage.setItem(DIRTY_KEY, "1");
+        else localStorage.removeItem(DIRTY_KEY);
+    }
+
+    _schedulePush() {
+        clearTimeout(this._pushTimer);
+        this._pushTimer = setTimeout(
+            () => this._flushPush(),
+            PUSH_DEBOUNCE_MS
+        );
+    }
+
+    async _flushPush({ keepalive = false } = {}) {
+        clearTimeout(this._pushTimer);
+        this._pushTimer = null;
+        if (!this._dirty) return;
+        const auth = GapiAuthController.get();
+        if (!auth.isLoggedIn || auth.isDevFallback) return;
+        const ok = await this._saveToDrive({ keepalive });
+        if (ok) this._markDirty(false);
+    }
 
     _applyConfig() {
         monaco.editor.setTheme(this._config.theme);
@@ -196,7 +254,7 @@ export class ConfigController {
         }
     }
 
-    async _saveToDrive() {
+    async _saveToDrive({ keepalive = false } = {}) {
         try {
             const auth = GapiAuthController.get();
             const token = auth.getAccessToken();
@@ -226,7 +284,7 @@ export class ConfigController {
                 fileId = createResponse.result.id;
             }
 
-            await fetch(
+            const res = await fetch(
                 `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`,
                 {
                     method: "PATCH",
@@ -235,10 +293,13 @@ export class ConfigController {
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify(this._config),
+                    keepalive,
                 }
             );
+            return res.ok;
         } catch {
-            // Save to Drive failed — local copy is still current
+            // Save to Drive failed — local copy remains; dirty stays set.
+            return false;
         }
     }
 }
