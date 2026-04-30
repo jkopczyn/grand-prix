@@ -4,3 +4,5 @@ SETUP.md
 .env
 .env.local
 .env.*.local
+.claude/
+privacy-policy-reqs.md

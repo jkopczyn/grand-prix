@@ -5,6 +5,7 @@ import { GapiAuthController } from "./contributions/auth";
 import { DriveController } from "./contributions/drive";
 import { ConfigController } from "./contributions/config";
 import { ConnectBanner } from "./contributions/connectBanner";
+import { FirstChangePrompt } from "./contributions/firstChangePrompt";
 import { EditMarginController } from "./contributions/editMargin";
 import { registerSaveAction } from "./commands/saveAction";
 import { registerCreateFileAction } from "./commands/createFile";
@@ -17,6 +18,7 @@ import { registerToggleWhitespaceAction } from "./commands/toggleWhitespace";
 import { registerChangeAutocompleteAction } from "./commands/changeAutocomplete";
 import { registerChangeLineNumbersAction } from "./commands/changeLineNumbers";
 import { registerResetConfigAction } from "./commands/resetConfig";
+import { registerShowSignInPromptsAction } from "./commands/showSignInPrompts";
 import { createMenubar } from "./menubar";
 import { getLanguageForFilename } from "./utils";
 
@@ -33,6 +35,7 @@ registerContribution(GapiAuthController.ID, new GapiAuthController(editor));
 registerContribution(DriveController.ID, new DriveController(editor));
 registerContribution(ConfigController.ID, new ConfigController(editor));
 registerContribution(ConnectBanner.ID, new ConnectBanner(editor));
+registerContribution(FirstChangePrompt.ID, new FirstChangePrompt(editor));
 registerContribution(
     EditMarginController.ID,
     new EditMarginController(editor)
@@ -49,6 +52,7 @@ registerToggleWhitespaceAction(editor);
 registerChangeAutocompleteAction(editor);
 registerChangeLineNumbersAction(editor);
 registerResetConfigAction(editor);
+registerShowSignInPromptsAction(editor);
 
 createMenubar(editor);
 
