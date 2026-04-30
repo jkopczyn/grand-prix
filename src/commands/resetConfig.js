@@ -12,8 +12,6 @@ export function registerResetConfigAction(editor) {
             )
                 return;
             await ConfigController.get().reset();
-            alert("Configuration reset. Reloading.");
-            window.location.reload();
         },
     });
 }

@@ -104,28 +104,34 @@ export class ConfigController {
 
     async reset() {
         localStorage.removeItem(STORAGE_KEY);
-        const auth = GapiAuthController.get();
-        if (!auth.isDevFallback) {
-            try {
-                const listResponse = await auth.executeWithRetry(() =>
-                    gapi.client.drive.files.list({
-                        spaces: "appDataFolder",
-                        q: `name = '${CONFIG_FILENAME}'`,
-                        fields: "files(id)",
-                    })
-                );
-                const files = listResponse?.result?.files;
-                if (files && files.length > 0) {
-                    await auth.executeWithRetry(() =>
-                        gapi.client.drive.files.delete({ fileId: files[0].id })
-                    );
-                }
-            } catch (err) {
-                console.error("[config] Failed to clear Drive config:", err);
-            }
-        }
-        this._config = { ...DEFAULTS };
+        // Reset in-memory state and re-apply *before* the Drive delete so
+        // the user sees defaults immediately even if Drive is slow/offline.
+        // Use a fresh object for the per-language map so mutations after
+        // reset don't leak into DEFAULTS.
+        this._config = { ...DEFAULTS, autocompleteByLanguage: {} };
         this._applyConfig();
+
+        const auth = GapiAuthController.get();
+        // Skip Drive cleanup if not actually signed in — otherwise
+        // executeWithRetry's 401 retry would pop a fresh sign-in prompt.
+        if (!auth.isLoggedIn || auth.isDevFallback) return;
+        try {
+            const listResponse = await auth.executeWithRetry(() =>
+                gapi.client.drive.files.list({
+                    spaces: "appDataFolder",
+                    q: `name = '${CONFIG_FILENAME}'`,
+                    fields: "files(id)",
+                })
+            );
+            const files = listResponse?.result?.files;
+            if (files && files.length > 0) {
+                await auth.executeWithRetry(() =>
+                    gapi.client.drive.files.delete({ fileId: files[0].id })
+                );
+            }
+        } catch (err) {
+            console.error("[config] Failed to clear Drive config:", err);
+        }
     }
 
     dispose() {}
