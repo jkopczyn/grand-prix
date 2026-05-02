@@ -90,9 +90,10 @@ export class DriveController {
         this._hasUnsavedChanges = false;
 
         const lang = getLanguageForFilename(this._fileName);
-        const model = this._editor.getModel();
-        monaco.editor.setModelLanguage(model, lang);
-        this._editor.setValue(content);
+        const oldModel = this._editor.getModel();
+        const newModel = monaco.editor.createModel(content, lang);
+        this._editor.setModel(newModel);
+        oldModel.dispose();
 
         // Re-apply config so per-language autocomplete settings (and the
         // filename-aware smart default) reflect the just-opened file.
