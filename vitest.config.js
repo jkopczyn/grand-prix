@@ -5,6 +5,7 @@ export default defineConfig({
         environment: "happy-dom",
         clearMocks: true,
         restoreMocks: true,
+        exclude: ["e2e/**", "node_modules/**"],
     },
     resolve: {
         alias: {

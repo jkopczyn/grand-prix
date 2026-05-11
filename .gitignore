@@ -6,3 +6,4 @@ SETUP.md
 .env.*.local
 .claude/
 privacy-policy-reqs.md
+test-results/
