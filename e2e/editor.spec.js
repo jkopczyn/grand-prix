@@ -122,17 +122,29 @@ test("autocomplete picker opens and accepts a selection", async ({ page }) => {
     await expect(listbox.getByRole("option", { name: "On" })).toBeVisible();
     await expect(listbox.getByRole("option", { name: "Off" })).toBeVisible();
 
-    // Accept selection — should not throw
+    // Select "On" and verify the config was actually persisted
+    await page.keyboard.type("On");
+    await page
+        .locator(".quick-input-list .quick-input-list-entry")
+        .first()
+        .waitFor({ timeout: 5000 });
     await page.keyboard.press("Enter");
+
     // Dismiss first-change sign-in prompt if it appears (fires because config changed)
     const notNow = page.getByRole("button", { name: "Not now" });
     if (await notNow.isVisible({ timeout: 2000 }).catch(() => false)) {
         await notNow.click();
     }
+
+    // Verify the autocomplete override was written to localStorage
+    const stored = await page.evaluate(() =>
+        JSON.parse(localStorage.getItem("grandPrix.config") || "{}")
+    );
+    expect(stored.autocompleteByLanguage?.plaintext).toBe("on");
     expect(errors).toEqual([]);
 });
 
-test("word wrap toggle does not throw", async ({ page }) => {
+test("word wrap toggle writes to localStorage", async ({ page }) => {
     test.setTimeout(45000);
 
     const errors = await openEditor(page);
@@ -143,6 +155,12 @@ test("word wrap toggle does not throw", async ({ page }) => {
 
     await page.waitForTimeout(300);
     expect(errors).toEqual([]);
+
+    // Verify the config was actually updated, not just that no error was thrown
+    const stored = await page.evaluate(() =>
+        JSON.parse(localStorage.getItem("grandPrix.config") || "{}")
+    );
+    expect(stored.wordWrap).toBe("on");
 });
 
 test("Save Locally triggers a download", async ({ page }) => {

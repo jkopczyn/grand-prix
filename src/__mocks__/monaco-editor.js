@@ -53,6 +53,7 @@ export function createMockEditor(initialValue = "") {
             onDidChangeModelContentCb = fn;
             return { dispose: vi.fn() };
         }),
+        onDidChangeModelLanguage: vi.fn(() => ({ dispose: vi.fn() })),
         getModel: vi.fn(() => model),
         getValue: vi.fn(() => model.getValue()),
         deltaDecorations: vi.fn((old, newOnes) => newOnes),
