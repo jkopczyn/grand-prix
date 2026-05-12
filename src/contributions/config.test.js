@@ -153,6 +153,20 @@ describe("ConfigController", () => {
         expect(config.get("theme")).toBe("vs");
     });
 
+    // Bug: _loadLocal() uses Object.assign, which merges null values from
+    // localStorage over the defaults. A crafted (or buggy) stored config with
+    // null-valued keys silently replaces valid defaults with null, causing
+    // monaco.editor.setTheme(null) and editor.updateOptions({ wordWrap: null }).
+    it("null values in stored config do not overwrite defaults", () => {
+        localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify({ theme: null, wordWrap: null }),
+        );
+        const { config } = setup();
+        expect(config.get("theme")).toBe("vs");
+        expect(config.get("wordWrap")).toBe("off");
+    });
+
     // --- reset() ---
 
     it("reset() removes config from localStorage", async () => {
