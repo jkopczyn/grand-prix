@@ -34,6 +34,13 @@ export class FirstChangePrompt {
     _maybeShow() {
         if (this._domNode) return; // already showing
         const auth = GapiAuthController.get();
+        // Don't decide while token restore is still in flight — a returning
+        // logged-in user briefly reads as logged out, which would wrongly
+        // trigger the prompt. Re-evaluate once restore settles.
+        if (auth.restoreSettled === false) {
+            auth.restored?.then(() => this._maybeShow());
+            return;
+        }
         if (auth.isLoggedIn) return;
         if (auth.isDevFallback) return;
         if (localStorage.getItem(SIGN_IN_DISMISSED_KEY) === "1") return;

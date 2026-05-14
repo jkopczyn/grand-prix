@@ -12,6 +12,8 @@ function makeAuth(overrides = {}) {
     return {
         isLoggedIn: false,
         isDevFallback: false,
+        restoreSettled: true,
+        restored: Promise.resolve(),
         requestToken: vi.fn().mockResolvedValue(undefined),
         ...overrides,
     };
@@ -138,6 +140,46 @@ describe("FirstChangePrompt", () => {
         expect(localStorage.getItem(DISMISSED_KEY)).toBe("1");
         expect(eventFired).toBe(true);
         expect(document.body.querySelector("[style]")).toBeNull();
+    });
+
+    it("waits for auth restore to settle before showing", async () => {
+        let resolveRestore;
+        const restored = new Promise((r) => (resolveRestore = r));
+        const { auth, trigger } = setup({
+            restoreSettled: false,
+            restored,
+        });
+
+        trigger();
+        // Restore still in flight — must not decide yet.
+        expect(document.body.querySelector("div")).toBeNull();
+
+        auth.restoreSettled = true; // settled, still logged out
+        resolveRestore();
+        await restored;
+        await Promise.resolve();
+
+        expect(document.body.querySelector("div")).not.toBeNull();
+    });
+
+    it("does not show for a returning logged-in user once restore settles", async () => {
+        let resolveRestore;
+        const restored = new Promise((r) => (resolveRestore = r));
+        const { auth, trigger } = setup({
+            restoreSettled: false,
+            restored,
+        });
+
+        trigger();
+        expect(document.body.querySelector("div")).toBeNull();
+
+        auth.isLoggedIn = true;
+        auth.restoreSettled = true;
+        resolveRestore();
+        await restored;
+        await Promise.resolve();
+
+        expect(document.body.querySelector("div")).toBeNull();
     });
 
     it("dispose removes modal from body", () => {

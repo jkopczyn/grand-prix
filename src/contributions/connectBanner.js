@@ -18,6 +18,10 @@ export class ConnectBanner {
         this._render();
 
         const auth = GapiAuthController.get();
+        // Re-render once token restore settles: until then we can't tell a
+        // returning logged-in user from a logged-out one, so the banner stays
+        // hidden rather than flashing in and back out.
+        auth.restored?.then(() => this._render());
         auth.onLoggedInChanged(() => this._render());
 
         // Restore-prompts command dispatches this so we re-evaluate.
@@ -36,6 +40,8 @@ export class ConnectBanner {
 
     _shouldShow() {
         const auth = GapiAuthController.get();
+        // Wait until restore settles before deciding — see constructor.
+        if (auth.restoreSettled === false) return false;
         if (auth.isLoggedIn) return false;
         if (auth.isDevFallback) return false;
         if (localStorage.getItem(SIGN_IN_DISMISSED_KEY) === "1") return false;

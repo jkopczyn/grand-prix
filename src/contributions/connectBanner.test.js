@@ -10,6 +10,8 @@ function makeAuth(overrides = {}) {
     return {
         isLoggedIn: false,
         isDevFallback: false,
+        restoreSettled: true,
+        restored: Promise.resolve(),
         onLoggedInChanged: vi.fn().mockReturnValue({ dispose: vi.fn() }),
         requestToken: vi.fn().mockResolvedValue(undefined),
         ...overrides,
@@ -91,6 +93,42 @@ describe("ConnectBanner", () => {
         auth.isLoggedIn = true;
         const cb = auth.onLoggedInChanged.mock.calls[0][0];
         cb();
+
+        expect(container.classList.contains("visible")).toBe(false);
+    });
+
+    it("stays hidden until auth restore settles, then shows if logged out", async () => {
+        let resolveRestore;
+        const restored = new Promise((r) => (resolveRestore = r));
+        const { auth, container } = setup({
+            restoreSettled: false,
+            restored,
+        });
+        // Restore in flight — login state unknown, so don't show yet.
+        expect(container.classList.contains("visible")).toBe(false);
+
+        auth.restoreSettled = true; // settled, still logged out
+        resolveRestore();
+        await restored;
+        await Promise.resolve();
+
+        expect(container.classList.contains("visible")).toBe(true);
+    });
+
+    it("does not flash the banner for a returning logged-in user", async () => {
+        let resolveRestore;
+        const restored = new Promise((r) => (resolveRestore = r));
+        const { auth, container } = setup({
+            restoreSettled: false,
+            restored,
+        });
+        expect(container.classList.contains("visible")).toBe(false);
+
+        auth.isLoggedIn = true;
+        auth.restoreSettled = true;
+        resolveRestore();
+        await restored;
+        await Promise.resolve();
 
         expect(container.classList.contains("visible")).toBe(false);
     });

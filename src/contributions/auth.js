@@ -61,6 +61,11 @@ export class GapiAuthController {
         return this._restorePromise;
     }
 
+    /** Synchronous counterpart of `restored` — true once restore has settled. */
+    get restoreSettled() {
+        return this._restoreSettled;
+    }
+
     onLoggedInChanged(callback) {
         this._listeners.push(callback);
         return {
