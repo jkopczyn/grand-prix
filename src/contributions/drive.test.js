@@ -22,6 +22,7 @@ function makeAuth(overrides = {}) {
         executeWithRetry: vi.fn(),
         getAccessToken: vi.fn().mockReturnValue("test-token"),
         requestToken: vi.fn().mockResolvedValue(undefined),
+        ensureFreshToken: vi.fn().mockResolvedValue(undefined),
         ...overrides,
     };
 }
@@ -101,5 +102,30 @@ describe("DriveController — uncovered edge cases", () => {
         // Should have called fetch at most twice: one original attempt + one retry.
         // Currently recurses until fetchCallCount exceeds the guard above.
         expect(fetchCallCount).toBeLessThanOrEqual(2);
+    });
+
+    // saveFile() should renew a stale token before the upload so an idle
+    // session does not 401 and trigger a login popup.
+    it("saveFile() refreshes the token before uploading", async () => {
+        const { drive, auth } = setup();
+        drive._fileId = "file-id";
+
+        const order = [];
+        auth.ensureFreshToken.mockImplementation(async () => {
+            order.push("ensureFreshToken");
+        });
+        global.fetch = vi.fn().mockImplementation(() => {
+            order.push("fetch");
+            return Promise.resolve({
+                status: 200,
+                ok: true,
+                json: () => Promise.resolve({}),
+            });
+        });
+
+        await drive.saveFile();
+
+        expect(auth.ensureFreshToken).toHaveBeenCalled();
+        expect(order).toEqual(["ensureFreshToken", "fetch"]);
     });
 });

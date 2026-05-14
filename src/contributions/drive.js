@@ -113,6 +113,10 @@ export class DriveController {
         const auth = GapiAuthController.get();
         const content = this._editor.getValue();
 
+        // Renew an expired/near-expiry token silently before the request, so an
+        // idle session is saved without a 401 round-trip or a login popup.
+        await auth.ensureFreshToken();
+
         for (let attempt = 0; attempt < 2; attempt++) {
             const token = auth.getAccessToken();
             const response = await fetch(
