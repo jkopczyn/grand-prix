@@ -16,10 +16,12 @@ function setupGapi() {
     };
 }
 
-function setupGoogle() {
+// `behavior` (optional) is invoked as behavior(tokenClient, config) whenever
+// requestAccessToken is called, letting a test drive the GSI callback.
+function setupGoogle(behavior) {
     const tokenClient = {
         callback: null,
-        requestAccessToken: vi.fn(),
+        requestAccessToken: vi.fn((config) => behavior?.(tokenClient, config)),
     };
     global.google = {
         accounts: {
@@ -31,6 +33,9 @@ function setupGoogle() {
     return tokenClient;
 }
 
+// Flush microtasks + one macrotask so the async GAPI/GSI init settles.
+const flush = () => new Promise((r) => setTimeout(r, 0));
+
 function storeValidToken() {
     localStorage.setItem(
         TOKEN_KEY,
@@ -41,41 +46,18 @@ function storeValidToken() {
     );
 }
 
+// NOTE: the _restoreToken polling-loop test lives in auth.restoreTimer.test.js.
+// It needs vi.useFakeTimers(), which poisons real setTimeout for the rest of
+// the file under happy-dom — so it is isolated in its own file.
+
 describe("GapiAuthController — uncovered edge cases", () => {
     afterEach(() => {
         localStorage.clear();
         delete global.gapi;
         delete global.google;
+        delete window.handleClientLoad;
+        vi.unstubAllEnvs();
         vi.restoreAllMocks();
-    });
-
-    // Bug: When a valid token is found in localStorage, _restoreToken() starts an
-    // applyToken polling loop that fires every 100 ms until _gapiReady is true.
-    // If GAPI never loads (e.g. network blocked in production), the loop runs
-    // forever. dispose() does nothing — it does not cancel the pending timer.
-    it("polling loop halts after dispose() when GAPI never loads", async () => {
-        vi.useFakeTimers();
-        storeValidToken();
-
-        const auth = new GapiAuthController(createMockEditor());
-
-        const setTimeoutSpy = vi.spyOn(global, "setTimeout");
-        setTimeoutSpy.mockClear();
-
-        // Give the loop some time to run
-        await vi.advanceTimersByTimeAsync(300);
-        const callsBeforeDispose = setTimeoutSpy.mock.calls.length;
-        expect(callsBeforeDispose).toBeGreaterThan(0); // confirm it is looping
-
-        // Disposing should cancel the timer so no further scheduling occurs
-        auth.dispose();
-        setTimeoutSpy.mockClear();
-        await vi.advanceTimersByTimeAsync(500);
-
-        // Bug: dispose() is a no-op — the loop keeps scheduling after disposal
-        expect(setTimeoutSpy.mock.calls.length).toBe(0);
-
-        vi.useRealTimers();
     });
 
     // Bug: requestToken() wraps GSI's callback in a Promise but overwrites
@@ -93,6 +75,9 @@ describe("GapiAuthController — uncovered edge cases", () => {
         const p1 = auth.requestToken();
         const p2 = auth.requestToken();
 
+        // requestToken awaits restore before wiring the GSI callback.
+        await flush();
+
         // Fire one token callback — under the bug only p2's resolve is registered
         tokenClient.callback({ access_token: "tok", expires_in: 3600 });
 
@@ -104,5 +89,145 @@ describe("GapiAuthController — uncovered edge cases", () => {
 
         // Bug: p1's resolve was overwritten; it hangs and loses the race
         expect(await race(p1)).not.toBe(TIMEOUT);
+    });
+});
+
+describe("GapiAuthController — login persistence", () => {
+    afterEach(() => {
+        localStorage.clear();
+        delete global.gapi;
+        delete global.google;
+        delete window.handleClientLoad;
+        vi.unstubAllEnvs();
+        vi.restoreAllMocks();
+    });
+
+    // Construct a controller with GAPI/GSI "loaded" and a restored token (if
+    // one was stored) already applied.
+    async function makeReadyAuth(behavior) {
+        setupGapi();
+        const tokenClient = setupGoogle(behavior);
+        const auth = new GapiAuthController(createMockEditor());
+        window.handleClientLoad();
+        // applyToken polls on a 100ms timer before it sees _gapiReady.
+        await new Promise((r) => setTimeout(r, 150));
+        return { auth, tokenClient };
+    }
+
+    it("requestToken adopts a restored token instead of prompting", async () => {
+        storeValidToken();
+        const { auth, tokenClient } = await makeReadyAuth();
+
+        expect(auth.isLoggedIn).toBe(true);
+        await auth.requestToken();
+
+        expect(tokenClient.requestAccessToken).not.toHaveBeenCalled();
+        auth.dispose();
+    });
+
+    it("tries a silent refresh before prompting interactively", async () => {
+        const { auth, tokenClient } = await makeReadyAuth((tc, config) => {
+            if (config?.prompt === "") {
+                tc.callback({ error: "interaction_required" });
+            } else {
+                tc.callback({ access_token: "fresh", expires_in: 3600 });
+            }
+        });
+
+        await auth.requestToken();
+
+        expect(tokenClient.requestAccessToken).toHaveBeenNthCalledWith(1, {
+            prompt: "",
+        });
+        expect(tokenClient.requestAccessToken).toHaveBeenNthCalledWith(2, {});
+        expect(auth.isLoggedIn).toBe(true);
+        auth.dispose();
+    });
+
+    it("applies the new token to gapi.client on success", async () => {
+        const { auth } = await makeReadyAuth((tc) =>
+            tc.callback({ access_token: "fresh", expires_in: 3600 })
+        );
+
+        await auth.requestToken();
+
+        expect(gapi.client.setToken).toHaveBeenCalledWith({
+            access_token: "fresh",
+            expires_in: 3600,
+        });
+        auth.dispose();
+    });
+
+    it("clears the stored token when silent and interactive both fail", async () => {
+        storeValidToken();
+        const { auth } = await makeReadyAuth((tc) =>
+            tc.callback({ error: "access_denied" })
+        );
+
+        // Resolves (DEV fallback) or rejects (prod) depending on env — either
+        // way the dead token must not be left behind for the next tab.
+        await auth.requestToken({ force: true }).catch(() => {});
+        expect(localStorage.getItem(TOKEN_KEY)).toBeNull();
+        auth.dispose();
+    });
+
+    it("syncs login state from another tab via the storage event", async () => {
+        const { auth } = await makeReadyAuth();
+        expect(auth.isLoggedIn).toBe(false);
+
+        const newValue = JSON.stringify({
+            token: { access_token: "x" },
+            expiry: Date.now() + 3_600_000,
+        });
+        window.dispatchEvent(
+            new StorageEvent("storage", { key: TOKEN_KEY, newValue })
+        );
+        expect(auth.isLoggedIn).toBe(true);
+        expect(gapi.client.setToken).toHaveBeenCalledWith({
+            access_token: "x",
+        });
+
+        window.dispatchEvent(
+            new StorageEvent("storage", { key: TOKEN_KEY, newValue: null })
+        );
+        expect(auth.isLoggedIn).toBe(false);
+        auth.dispose();
+    });
+
+    it("dispose removes the storage listener", async () => {
+        const { auth } = await makeReadyAuth();
+        const removeSpy = vi.spyOn(window, "removeEventListener");
+
+        auth.dispose();
+
+        expect(removeSpy).toHaveBeenCalledWith("storage", expect.any(Function));
+    });
+
+    it("ensureFreshToken is a no-op for a comfortably valid token", async () => {
+        storeValidToken();
+        const { auth, tokenClient } = await makeReadyAuth();
+
+        await auth.ensureFreshToken();
+
+        expect(tokenClient.requestAccessToken).not.toHaveBeenCalled();
+        auth.dispose();
+    });
+
+    it("ensureFreshToken refreshes a near-expiry token", async () => {
+        localStorage.setItem(
+            TOKEN_KEY,
+            JSON.stringify({
+                token: { access_token: "old" },
+                expiry: Date.now() + 30_000,
+            })
+        );
+        const { auth, tokenClient } = await makeReadyAuth((tc) =>
+            tc.callback({ access_token: "new", expires_in: 3600 })
+        );
+
+        await auth.ensureFreshToken();
+
+        expect(tokenClient.requestAccessToken).toHaveBeenCalled();
+        auth.dispose();
     });
 });
