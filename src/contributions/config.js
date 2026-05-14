@@ -180,10 +180,7 @@ export class ConfigController {
 
     _schedulePush() {
         clearTimeout(this._pushTimer);
-        this._pushTimer = setTimeout(
-            () => this._flushPush(),
-            PUSH_DEBOUNCE_MS
-        );
+        this._pushTimer = setTimeout(() => this._flushPush(), PUSH_DEBOUNCE_MS);
     }
 
     async _flushPush({ keepalive = false } = {}) {
@@ -211,8 +208,14 @@ export class ConfigController {
     _loadLocal() {
         try {
             const stored = localStorage.getItem(STORAGE_KEY);
-            if (stored) {
-                Object.assign(this._config, JSON.parse(stored));
+            if (!stored) return;
+            const parsed = JSON.parse(stored);
+            // Skip null/undefined values so a malformed stored config can't
+            // replace a valid default (e.g. theme: null → setTheme(null)).
+            for (const [key, value] of Object.entries(parsed)) {
+                if (value !== null && value !== undefined) {
+                    this._config[key] = value;
+                }
             }
         } catch {
             // ignore corrupt data
