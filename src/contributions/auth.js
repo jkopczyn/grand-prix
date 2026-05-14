@@ -20,6 +20,9 @@ export class GapiAuthController {
         this._gapiInitStarted = false;
         this._gsiReady = false;
         this._devFallback = false;
+        this._disposed = false;
+        this._restoreTokenTimer = null;
+        this._pendingTokenRequest = null;
 
         this._restoreToken();
         this._setupHandleClientLoad();
@@ -54,6 +57,18 @@ export class GapiAuthController {
             return;
         }
 
+        // Coalesce concurrent callers onto one in-flight request. Each call
+        // overwrites _tokenClient.callback, so without this the earlier
+        // caller's promise would never settle.
+        if (this._pendingTokenRequest) return this._pendingTokenRequest;
+
+        this._pendingTokenRequest = this._doRequestToken().finally(() => {
+            this._pendingTokenRequest = null;
+        });
+        return this._pendingTokenRequest;
+    }
+
+    async _doRequestToken() {
         // GSI script may still be loading when this is called (e.g. from a
         // URL-state-driven open at page load). Wait briefly before giving up.
         if (!this._tokenClient) {
@@ -163,7 +178,13 @@ export class GapiAuthController {
         }
     }
 
-    dispose() {}
+    dispose() {
+        this._disposed = true;
+        if (this._restoreTokenTimer) {
+            clearTimeout(this._restoreTokenTimer);
+            this._restoreTokenTimer = null;
+        }
+    }
 
     // --- Private ---
 
@@ -234,12 +255,12 @@ export class GapiAuthController {
             // (e.g. ConfigController) call gapi.client.drive.* immediately on login,
             // which is undefined until init completes.
             const applyToken = () => {
-                if (this._devFallback) return;
+                if (this._disposed || this._devFallback) return;
                 if (this._gapiReady) {
                     gapi.client.setToken(token);
                     this._setLoggedIn(true);
                 } else {
-                    setTimeout(applyToken, 100);
+                    this._restoreTokenTimer = setTimeout(applyToken, 100);
                 }
             };
             applyToken();
