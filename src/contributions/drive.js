@@ -72,7 +72,7 @@ export class DriveController {
                 fields: "name",
             })
         );
-        this._fileName = metaResponse.result.name;
+        if (!metaResponse) return;
 
         const contentResponse = await auth.executeWithRetry(() =>
             gapi.client.drive.files.get({
@@ -80,58 +80,68 @@ export class DriveController {
                 alt: "media",
             })
         );
+        if (!contentResponse) return;
 
+        const fileName = metaResponse.result.name;
         const content =
             typeof contentResponse.body === "string"
                 ? contentResponse.body
                 : JSON.stringify(contentResponse.result, null, 2);
 
+        // Commit state only after both fetches succeed, so a partial failure
+        // leaves the previous open file's state untouched.
         this._fileId = id;
+        this._fileName = fileName;
         this._hasUnsavedChanges = false;
 
-        const lang = getLanguageForFilename(this._fileName);
+        const lang = getLanguageForFilename(fileName);
         const oldModel = this._editor.getModel();
         const newModel = monaco.editor.createModel(content, lang);
         this._editor.setModel(newModel);
-        oldModel.dispose();
+        oldModel?.dispose();
 
         // Re-apply config so per-language autocomplete settings (and the
         // filename-aware smart default) reflect the just-opened file.
         ConfigController.get()?.applyConfig();
 
-        document.title = `${this._fileName} — Grand Prix`;
+        document.title = `${fileName} — Grand Prix`;
     }
 
     async saveFile() {
         if (!this._fileId) return;
 
         const auth = GapiAuthController.get();
-        const token = auth.getAccessToken();
         const content = this._editor.getValue();
 
-        const response = await fetch(
-            `https://www.googleapis.com/upload/drive/v3/files/${this._fileId}?uploadType=media`,
-            {
-                method: "PATCH",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "text/plain",
-                },
-                body: content,
+        for (let attempt = 0; attempt < 2; attempt++) {
+            const token = auth.getAccessToken();
+            const response = await fetch(
+                `https://www.googleapis.com/upload/drive/v3/files/${this._fileId}?uploadType=media`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "text/plain",
+                    },
+                    body: content,
+                }
+            );
+
+            if (
+                (response.status === 401 || response.status === 403) &&
+                attempt === 0
+            ) {
+                await auth.requestToken();
+                continue;
             }
-        );
 
-        if (response.status === 401 || response.status === 403) {
-            await auth.requestToken();
-            return this.saveFile();
+            if (!response.ok) {
+                throw new Error(`Save failed: ${response.status}`);
+            }
+
+            this._hasUnsavedChanges = false;
+            return response.json();
         }
-
-        if (!response.ok) {
-            throw new Error(`Save failed: ${response.status}`);
-        }
-
-        this._hasUnsavedChanges = false;
-        return response.json();
     }
 
     async createFile(name, folderId) {
