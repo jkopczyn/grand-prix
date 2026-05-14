@@ -45,7 +45,13 @@ describe("registerShowSignInPromptsAction", () => {
     it("dispatches grandPrix.signInPromptsRestored on window", () => {
         const { descriptor } = setup();
         let fired = false;
-        window.addEventListener("grandPrix.signInPromptsRestored", () => { fired = true; }, { once: true });
+        window.addEventListener(
+            "grandPrix.signInPromptsRestored",
+            () => {
+                fired = true;
+            },
+            { once: true }
+        );
         descriptor.run();
         expect(fired).toBe(true);
     });

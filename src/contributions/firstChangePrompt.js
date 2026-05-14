@@ -100,9 +100,7 @@ export class FirstChangePrompt {
             });
             // User has acted; suppress further nudges.
             localStorage.setItem(SIGN_IN_DISMISSED_KEY, "1");
-            window.dispatchEvent(
-                new Event("grandPrix.signInPromptsRestored")
-            );
+            window.dispatchEvent(new Event("grandPrix.signInPromptsRestored"));
             this._hide();
         });
 
@@ -113,9 +111,7 @@ export class FirstChangePrompt {
         neverBtn.addEventListener("click", () => {
             localStorage.setItem(SIGN_IN_DISMISSED_KEY, "1");
             // Banner subscribes to this event to re-render itself away.
-            window.dispatchEvent(
-                new Event("grandPrix.signInPromptsRestored")
-            );
+            window.dispatchEvent(new Event("grandPrix.signInPromptsRestored"));
             this._hide();
         });
 

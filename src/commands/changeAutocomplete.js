@@ -17,8 +17,7 @@ export function registerChangeAutocompleteAction(editor) {
         label: "Configure Autocomplete",
         async run() {
             const config = ConfigController.get();
-            const lang =
-                editor.getModel()?.getLanguageId() ?? "(no language)";
+            const lang = editor.getModel()?.getLanguageId() ?? "(no language)";
             const current =
                 config.getAutocompleteOverrideForCurrentLanguage() ?? "auto";
 

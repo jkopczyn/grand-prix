@@ -3,7 +3,14 @@ import { createMockEditor } from "../__mocks__/monaco-editor.js";
 import { EditMarginController } from "./editMargin";
 
 function makeChange(startLine, endLine, text) {
-    return { changes: [{ range: { startLineNumber: startLine, endLineNumber: endLine }, text }] };
+    return {
+        changes: [
+            {
+                range: { startLineNumber: startLine, endLineNumber: endLine },
+                text,
+            },
+        ],
+    };
 }
 
 function lastDecorationsCall(mockEditor) {
@@ -12,7 +19,9 @@ function lastDecorationsCall(mockEditor) {
 }
 
 function getClasses(mockEditor) {
-    return lastDecorationsCall(mockEditor).map((d) => d.options.linesDecorationsClassName);
+    return lastDecorationsCall(mockEditor).map(
+        (d) => d.options.linesDecorationsClassName
+    );
 }
 
 describe("EditMarginController", () => {
@@ -56,7 +65,11 @@ describe("EditMarginController", () => {
         // replace lines 2–4 with 4 lines of text (3 newlines → 4 new lines: 2, 3, 4, 5)
         triggerChange(2, 4, "a\nb\nc\nd");
         const changedLines = lastDecorationsCall(editor)
-            .filter((d) => d.options.linesDecorationsClassName === "edit-margin-changed")
+            .filter(
+                (d) =>
+                    d.options.linesDecorationsClassName ===
+                    "edit-margin-changed"
+            )
             .map((d) => d.range.startLineNumber);
         expect(changedLines).toContain(2);
         expect(changedLines).toContain(5);
@@ -68,7 +81,11 @@ describe("EditMarginController", () => {
         // change touches lines 4–6 but model only has 5 lines
         triggerChange(4, 6, "x\ny\nz");
         const changedLines = lastDecorationsCall(editor)
-            .filter((d) => d.options.linesDecorationsClassName === "edit-margin-changed")
+            .filter(
+                (d) =>
+                    d.options.linesDecorationsClassName ===
+                    "edit-margin-changed"
+            )
             .map((d) => d.range.startLineNumber);
         expect(changedLines.every((l) => l <= 5)).toBe(true);
     });
@@ -98,7 +115,11 @@ describe("EditMarginController", () => {
         // After save, the new content is the new baseline — trigger another change
         triggerChange(3, 3, "baz");
         const changedLines = lastDecorationsCall(editor)
-            .filter((d) => d.options.linesDecorationsClassName === "edit-margin-changed")
+            .filter(
+                (d) =>
+                    d.options.linesDecorationsClassName ===
+                    "edit-margin-changed"
+            )
             .map((d) => d.range.startLineNumber);
         expect(changedLines).toContain(3);
         expect(changedLines).not.toContain(2);

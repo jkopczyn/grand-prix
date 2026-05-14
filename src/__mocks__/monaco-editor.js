@@ -25,12 +25,16 @@ function createMockModel(initialValue = "") {
     let value = initialValue;
     return {
         getValue: vi.fn(() => value),
-        setValue: vi.fn((v) => { value = v; }),
+        setValue: vi.fn((v) => {
+            value = v;
+        }),
         getLineCount: vi.fn(() => 100),
         getLanguageId: vi.fn(() => "plaintext"),
         onDidChangeContent: vi.fn(() => ({ dispose: vi.fn() })),
         dispose: vi.fn(),
-        _setValue(v) { value = v; },
+        _setValue(v) {
+            value = v;
+        },
     };
 }
 
@@ -43,7 +47,8 @@ export function createMockEditor(initialValue = "") {
     const mockEditor = {
         _model: model,
         _onDidChangeModelCb: () => onDidChangeModelCb && onDidChangeModelCb(),
-        _onDidChangeModelContentCb: (e) => onDidChangeModelContentCb && onDidChangeModelContentCb(e),
+        _onDidChangeModelContentCb: (e) =>
+            onDidChangeModelContentCb && onDidChangeModelContentCb(e),
 
         onDidChangeModel: vi.fn((fn) => {
             onDidChangeModelCb = fn;
@@ -57,7 +62,9 @@ export function createMockEditor(initialValue = "") {
         getModel: vi.fn(() => model),
         getValue: vi.fn(() => model.getValue()),
         deltaDecorations: vi.fn((old, newOnes) => newOnes),
-        addAction: vi.fn((descriptor) => { lastDescriptor = descriptor; }),
+        addAction: vi.fn((descriptor) => {
+            lastDescriptor = descriptor;
+        }),
         updateOptions: vi.fn(),
         getAction: vi.fn(),
         getLastDescriptor: () => lastDescriptor,

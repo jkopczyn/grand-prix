@@ -7,10 +7,7 @@ export function registerToggleWhitespaceAction(editor) {
         run(editor) {
             const config = ConfigController.get();
             const current = config.get("renderWhitespace");
-            config.set(
-                "renderWhitespace",
-                current === "none" ? "all" : "none"
-            );
+            config.set("renderWhitespace", current === "none" ? "all" : "none");
         },
     });
 }

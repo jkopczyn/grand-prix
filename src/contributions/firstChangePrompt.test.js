@@ -103,7 +103,13 @@ describe("FirstChangePrompt", () => {
         const { trigger } = setup();
         trigger();
         let eventFired = false;
-        window.addEventListener("grandPrix.signInPromptsRestored", () => { eventFired = true; }, { once: true });
+        window.addEventListener(
+            "grandPrix.signInPromptsRestored",
+            () => {
+                eventFired = true;
+            },
+            { once: true }
+        );
         const never = Array.from(document.querySelectorAll("button")).find(
             (b) => b.textContent === "Don't ask again"
         );
@@ -117,7 +123,13 @@ describe("FirstChangePrompt", () => {
         const { auth, trigger } = setup();
         trigger();
         let eventFired = false;
-        window.addEventListener("grandPrix.signInPromptsRestored", () => { eventFired = true; }, { once: true });
+        window.addEventListener(
+            "grandPrix.signInPromptsRestored",
+            () => {
+                eventFired = true;
+            },
+            { once: true }
+        );
         const signIn = Array.from(document.querySelectorAll("button")).find(
             (b) => b.textContent === "Sign in"
         );

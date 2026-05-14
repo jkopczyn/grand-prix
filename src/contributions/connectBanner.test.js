@@ -66,9 +66,9 @@ describe("ConnectBanner", () => {
 
     it("clicking the dismiss button sets dismissed key and hides banner", () => {
         const { container } = setup();
-        const dismissBtn = Array.from(container.querySelectorAll("button")).find((b) =>
-            b.textContent.includes("✕")
-        );
+        const dismissBtn = Array.from(
+            container.querySelectorAll("button")
+        ).find((b) => b.textContent.includes("✕"));
         dismissBtn.click();
         expect(localStorage.getItem(DISMISSED_KEY)).toBe("1");
         expect(container.classList.contains("visible")).toBe(false);

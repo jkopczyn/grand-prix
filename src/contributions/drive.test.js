@@ -1,6 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { registerContribution } from "../registry";
-import { createMockEditor, editor as monacoEditor } from "../__mocks__/monaco-editor.js";
+import {
+    createMockEditor,
+    editor as monacoEditor,
+} from "../__mocks__/monaco-editor.js";
 import { DriveController } from "./drive";
 
 vi.mock("../utils", () => ({
@@ -65,7 +68,9 @@ describe("DriveController — uncovered edge cases", () => {
             .mockResolvedValueOnce({ result: { name: "foo.js" } })
             .mockRejectedValueOnce(new Error("content fetch failed"));
 
-        await expect(drive.openFile("file-id")).rejects.toThrow("content fetch failed");
+        await expect(drive.openFile("file-id")).rejects.toThrow(
+            "content fetch failed"
+        );
 
         // After a failed open, no state should have been mutated
         expect(drive.fileId).toBeNull();
@@ -84,7 +89,9 @@ describe("DriveController — uncovered edge cases", () => {
         global.fetch = vi.fn().mockImplementation(() => {
             fetchCallCount++;
             if (fetchCallCount > 3) {
-                throw new Error("runaway recursion — no depth guard in saveFile()");
+                throw new Error(
+                    "runaway recursion — no depth guard in saveFile()"
+                );
             }
             return Promise.resolve({ status: 401, ok: false });
         });

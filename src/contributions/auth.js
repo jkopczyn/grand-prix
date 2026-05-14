@@ -123,9 +123,7 @@ export class GapiAuthController {
      */
     async executeWithRetry(requestFn) {
         if (this._devFallback) {
-            console.warn(
-                "[auth] DEV fallback active — skipping GAPI request"
-            );
+            console.warn("[auth] DEV fallback active — skipping GAPI request");
             return undefined;
         }
 

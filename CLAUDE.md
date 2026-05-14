@@ -20,13 +20,15 @@ Monaco-based text editor for Google Drive files. Vanilla JS, Vite 4, hosted on G
 
 **AppData folder** (`parents: ["appDataFolder"]`) is private per-app storage used for `config.json`.
 
-*Preserve tokens* in `localStorage` with expiry and restore on page load to skip the OAuth popup.
+_Preserve tokens_ in `localStorage` with expiry and restore on page load to skip the OAuth popup.
 Any 401/403 for any API call should prompt a re-request
 
 **Discovery doc URL:**
+
 ```
 https://www.googleapis.com/discovery/v1/apis/drive/v3/rest
 ```
+
 ## Key Constraints
 
 - `monaco.editor.registerEditorContribution()` is NOT a public API. Do not use it.

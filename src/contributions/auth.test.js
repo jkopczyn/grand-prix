@@ -37,7 +37,7 @@ function storeValidToken() {
         JSON.stringify({
             token: { access_token: "stored-tok" },
             expiry: Date.now() + 3_600_000,
-        }),
+        })
     );
 }
 

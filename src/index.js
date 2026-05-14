@@ -37,10 +37,7 @@ registerContribution(DriveController.ID, new DriveController(editor));
 registerContribution(ConfigController.ID, new ConfigController(editor));
 registerContribution(ConnectBanner.ID, new ConnectBanner(editor));
 registerContribution(FirstChangePrompt.ID, new FirstChangePrompt(editor));
-registerContribution(
-    EditMarginController.ID,
-    new EditMarginController(editor)
-);
+registerContribution(EditMarginController.ID, new EditMarginController(editor));
 
 registerSignInAction(editor);
 registerSaveAction(editor);

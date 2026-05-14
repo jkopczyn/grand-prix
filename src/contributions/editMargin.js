@@ -45,7 +45,10 @@ export class EditMarginController {
             for (const l of this._savedLines) {
                 if (l > totalLines) this._savedLines.delete(l);
             }
-            if (this._originalContent !== null && model.getValue() === this._originalContent) {
+            if (
+                this._originalContent !== null &&
+                model.getValue() === this._originalContent
+            ) {
                 this._changedLines.clear();
                 this._savedLines.clear();
             }

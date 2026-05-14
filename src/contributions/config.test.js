@@ -1,6 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { registerContribution } from "../registry";
-import { createMockEditor, editor as monacoEditor } from "../__mocks__/monaco-editor.js";
+import {
+    createMockEditor,
+    editor as monacoEditor,
+} from "../__mocks__/monaco-editor.js";
 import { ConfigController } from "./config";
 
 const AUTH_ID = "grandPrix.auth";
@@ -134,7 +137,10 @@ describe("ConfigController", () => {
     // --- localStorage loading ---
 
     it("constructor loads stored config from localStorage", () => {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ theme: "hc-light", wordWrap: "on" }));
+        localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify({ theme: "hc-light", wordWrap: "on" })
+        );
         const { config } = setup();
         expect(config.get("theme")).toBe("hc-light");
         expect(config.get("wordWrap")).toBe("on");
@@ -160,7 +166,7 @@ describe("ConfigController", () => {
     it("null values in stored config do not overwrite defaults", () => {
         localStorage.setItem(
             STORAGE_KEY,
-            JSON.stringify({ theme: null, wordWrap: null }),
+            JSON.stringify({ theme: null, wordWrap: null })
         );
         const { config } = setup();
         expect(config.get("theme")).toBe("vs");
@@ -241,13 +247,17 @@ describe("ConfigController", () => {
         editor._model.getLanguageId.mockReturnValue("python");
         config.setAutocompleteForCurrentLanguage("off");
         config.clearAutocompleteForCurrentLanguage();
-        expect(config.getAutocompleteOverrideForCurrentLanguage()).toBeUndefined();
+        expect(
+            config.getAutocompleteOverrideForCurrentLanguage()
+        ).toBeUndefined();
     });
 
     it("getAutocompleteOverrideForCurrentLanguage returns undefined when not set", () => {
         const { editor, config } = setup();
         editor._model.getLanguageId.mockReturnValue("python");
-        expect(config.getAutocompleteOverrideForCurrentLanguage()).toBeUndefined();
+        expect(
+            config.getAutocompleteOverrideForCurrentLanguage()
+        ).toBeUndefined();
     });
 
     it("getAutocompleteOverrideForCurrentLanguage returns stored value", () => {

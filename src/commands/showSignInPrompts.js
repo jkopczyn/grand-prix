@@ -10,9 +10,7 @@ export function registerShowSignInPromptsAction(editor) {
             // Also clear the per-session flag so the first-change modal
             // can fire again without a reload.
             sessionStorage.removeItem(SESSION_SHOWN_KEY);
-            window.dispatchEvent(
-                new Event("grandPrix.signInPromptsRestored")
-            );
+            window.dispatchEvent(new Event("grandPrix.signInPromptsRestored"));
         },
     });
 }
