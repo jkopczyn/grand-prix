@@ -110,7 +110,6 @@ describe("EditMarginController", () => {
 
     it("markSaved updates originalContent", () => {
         triggerChange(2, 2, "bar");
-        const newValue = editor._model.getValue();
         ctrl.markSaved();
         // After save, the new content is the new baseline — trigger another change
         triggerChange(3, 3, "baz");

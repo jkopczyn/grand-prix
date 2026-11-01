@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, afterEach, vi } from "vitest";
 import { registerContribution } from "../registry";
 import {
     createMockEditor,
@@ -83,7 +83,7 @@ describe("DriveController — uncovered edge cases", () => {
     // circuit breaker. Under a stubborn server or broken auth flow this becomes an
     // infinite call stack.
     it("saveFile() retries at most once on a persistent 401 before giving up", async () => {
-        const { drive, auth } = setup();
+        const { drive } = setup();
         drive._fileId = "file-id";
 
         let fetchCallCount = 0;
