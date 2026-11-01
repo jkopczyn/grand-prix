@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { registerContribution } from "../registry";
 import { createMockEditor } from "../__mocks__/monaco-editor.js";
 import { registerToggleWhitespaceAction } from "./toggleWhitespace";
