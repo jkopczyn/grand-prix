@@ -129,3 +129,72 @@ describe("DriveController — uncovered edge cases", () => {
         expect(order).toEqual(["ensureFreshToken", "fetch"]);
     });
 });
+
+describe("DriveController — shared drive support", () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+        delete global.gapi;
+    });
+
+    // Drive reports shared-drive files as 404 "File not found" unless the
+    // request opts in with supportsAllDrives. Run the function handed to
+    // executeWithRetry so the real gapi call arguments can be inspected.
+    function installGapi() {
+        const get = vi
+            .fn()
+            .mockResolvedValueOnce({ result: { name: "foo.js" } })
+            .mockResolvedValueOnce({ body: "content" });
+        const create = vi.fn().mockResolvedValue({ result: { id: "new-id" } });
+        global.gapi = { client: { drive: { files: { get, create } } } };
+        return { get, create };
+    }
+
+    it("openFile() requests metadata and content with supportsAllDrives", async () => {
+        const { drive, auth, editor } = setup();
+        editor.setModel = vi.fn();
+        auth.executeWithRetry.mockImplementation((fn) => fn());
+        const { get } = installGapi();
+
+        await drive.openFile("file-id");
+
+        expect(get).toHaveBeenCalledTimes(2);
+        for (const [args] of get.mock.calls) {
+            expect(args).toMatchObject({
+                fileId: "file-id",
+                supportsAllDrives: true,
+            });
+        }
+        expect(drive.fileName).toBe("foo.js");
+    });
+
+    it("saveFile() uploads with supportsAllDrives in the query string", async () => {
+        const { drive } = setup();
+        drive._fileId = "file-id";
+        global.fetch = vi.fn().mockResolvedValue({
+            status: 200,
+            ok: true,
+            json: () => Promise.resolve({}),
+        });
+
+        await drive.saveFile();
+
+        const url = new URL(global.fetch.mock.calls[0][0]);
+        expect(url.searchParams.get("uploadType")).toBe("media");
+        expect(url.searchParams.get("supportsAllDrives")).toBe("true");
+    });
+
+    it("createFile() creates with supportsAllDrives", async () => {
+        const { drive, auth, editor } = setup();
+        editor.setModel = vi.fn();
+        auth.executeWithRetry.mockImplementation((fn) => fn());
+        const { create } = installGapi();
+
+        await drive.createFile("new.js", "folder-id");
+
+        expect(create).toHaveBeenCalledTimes(1);
+        expect(create.mock.calls[0][0]).toMatchObject({
+            supportsAllDrives: true,
+            resource: { name: "new.js", parents: ["folder-id"] },
+        });
+    });
+});
