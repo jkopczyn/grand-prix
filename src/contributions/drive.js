@@ -63,6 +63,8 @@ export class DriveController {
         return this._hasUnsavedChanges;
     }
 
+    // Drive calls pass supportsAllDrives so files in shared drives are
+    // visible; without it Drive reports them as 404 "File not found".
     async openFile(id) {
         const auth = GapiAuthController.get();
 
@@ -70,6 +72,7 @@ export class DriveController {
             gapi.client.drive.files.get({
                 fileId: id,
                 fields: "name",
+                supportsAllDrives: true,
             })
         );
         if (!metaResponse) return;
@@ -78,6 +81,7 @@ export class DriveController {
             gapi.client.drive.files.get({
                 fileId: id,
                 alt: "media",
+                supportsAllDrives: true,
             })
         );
         if (!contentResponse) return;
@@ -120,7 +124,7 @@ export class DriveController {
         for (let attempt = 0; attempt < 2; attempt++) {
             const token = auth.getAccessToken();
             const response = await fetch(
-                `https://www.googleapis.com/upload/drive/v3/files/${this._fileId}?uploadType=media`,
+                `https://www.googleapis.com/upload/drive/v3/files/${this._fileId}?uploadType=media&supportsAllDrives=true`,
                 {
                     method: "PATCH",
                     headers: {
@@ -153,6 +157,7 @@ export class DriveController {
 
         const response = await auth.executeWithRetry(() =>
             gapi.client.drive.files.create({
+                supportsAllDrives: true,
                 resource: {
                     name,
                     parents: folderId ? [folderId] : [],

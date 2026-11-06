@@ -35,10 +35,12 @@ export function registerOpenFileAction(editor) {
 
             const view = new google.picker.DocsView()
                 .setIncludeFolders(true)
-                .setSelectFolderEnabled(false);
+                .setSelectFolderEnabled(false)
+                .setEnableDrives(true);
 
             const picker = new google.picker.PickerBuilder()
                 .addView(view)
+                .enableFeature(google.picker.Feature.SUPPORT_DRIVES)
                 .setOAuthToken(token)
                 .setDeveloperKey(API_KEY)
                 .setAppId(APP_ID)
